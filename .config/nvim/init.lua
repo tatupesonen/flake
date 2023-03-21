@@ -121,7 +121,13 @@ require('lazy').setup({
     "nvim-tree/nvim-tree.lua",
     version = "*",
     config = function()
-      require("nvim-tree").setup {}
+      require("nvim-tree").setup {
+        hijack_cursor = true,
+        auto_close = true,
+        update_focused_file = {
+          enable = true,
+        }
+      }
     end,
   },
 
@@ -147,7 +153,7 @@ require('lazy').setup({
     -- See `:help lualine.txt`
     opts = {
       options = {
-        icons_enabled = false,
+        icons_enabled = true,
         theme = 'onedark',
         component_separators = '|',
         section_separators = '',
