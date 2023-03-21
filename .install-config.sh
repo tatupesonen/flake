@@ -2,7 +2,7 @@
 
 set -e
 DOTFILES_PATH="$HOME/.dotfiles"
-PKGS="stow zsh pkg ripgrep curl"
+PKGS="stow zsh ripgrep curl"
 
 
 clone_repo() {
@@ -13,7 +13,7 @@ clone_repo() {
 install_pkg_debian() {
  echo "📦 Installing packages"
  echo "   $PKGS"
- sudo apt-get -y -qq install $PKGS
+ sudo apt-get update && apt-get -y -qq install $PKGS
  echo "✅ Packages installed!"
 }
 
@@ -39,9 +39,17 @@ change_shell() {
   chsh -s $(which zsh)
 }
 
+install_fzf() {
+  echo "🔍 Installing fzf"
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+  ~/.fzf/install
+}
+
+
 install_pkg_debian
 clone_repo
 mount_cfg
 change_shell
 install_omz
+change_shell
 echo "✅ Done!"
