@@ -52,8 +52,9 @@ change_shell() {
 
 install_fzf() {
   echo "🔍 Installing fzf"
+  rm -rf $HOME/.fzf
   git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-  ~/.fzf/install
+  $HOME/.fzf/install --bin
 }
 
 
@@ -62,5 +63,6 @@ clone_repo
 mount_cfg
 change_shell
 install_omz
+install_fzf
 
 echo "✅ Done!"
