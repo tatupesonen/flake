@@ -108,7 +108,7 @@ export EDITOR="nvim"
 
 # Git aliases
 
-
+export PATH="$HOME/.cargo/bin:/$PATH"
 
 [ -f ~/.config/zsh/git-aliases.sh ] && source ~/.config/zsh/git-aliases.sh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
