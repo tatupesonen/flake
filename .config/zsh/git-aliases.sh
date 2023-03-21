@@ -72,7 +72,7 @@ _git_log_brief_format='%C(green)%h%C(reset) %s%n%C(blue)(%ar by %an)%C(red)%d%C(
   alias gdm='git ls-files --modified'
   alias gdu='git ls-files --other --exclude-standard'
   alias gdk='git ls-files --killed'
-  alias gdi='git status --porcelain --short --ignored | sed -n "s/^!! //p"'
+  alias gdi='git status --porcelain --short --ignored'
 
   # Fetch (f)
 

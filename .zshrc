@@ -70,7 +70,7 @@ ZSH_THEME="minimal"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git z)
+plugins=(git z docker)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -105,6 +105,8 @@ alias dotfiles="git -C $HOME/.dotfiles"
 alias vim="nvim"
 alias v="nvim"
 export EDITOR="nvim"
+
+alias ls="exa --git"
 
 # Git aliases
 
