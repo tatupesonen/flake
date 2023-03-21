@@ -102,5 +102,7 @@ source $ZSH/oh-my-zsh.sh
 
 # dotfiles aliases
 alias dotfiles="git -C $HOME/.dotfiles"
+alias vim="nvim"
+alias v="nvim"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
