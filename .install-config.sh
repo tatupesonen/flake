@@ -8,7 +8,7 @@ PKGS="stow zsh ripgrep curl"
 clone_repo() {
   echo "🔨 Pulling dotfiles to $DOTFILES_PATH"
   while true; do
-  read -p "Continue? (yes/no)" yn
+  read -p "Continue? (yes/no) " yn
   case $yn in 
           yes ) break;;
           no ) return;;
@@ -28,7 +28,7 @@ install_pkg_debian() {
 install_omz() {
   echo "📦 Installing Oh my Zsh"
   rm -rf $HOME/.oh-my-zsh
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc || true
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc || true
 }
 
 mount_cfg() {
@@ -62,5 +62,5 @@ clone_repo
 mount_cfg
 change_shell
 install_omz
-change_shell
+
 echo "✅ Done!"
