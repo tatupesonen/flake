@@ -7,18 +7,28 @@ PKGS="stow zsh ripgrep curl"
 
 clone_repo() {
   echo "🔨 Pulling dotfiles to $DOTFILES_PATH"
+  while true; do
+  read -p "Continue? (yes/no)" yn
+  case $yn in 
+          yes ) break;;
+          no ) return;;
+          * ) echo invalid response;;
+  esac
+  done
   git clone --progress https://github.com/tatupesonen/dotfiles.git $DOTFILES_PATH
 }
 
 install_pkg_debian() {
  echo "📦 Installing packages"
  echo "   $PKGS"
- sudo apt-get update && apt-get -y -qq install $PKGS
+ sudo apt-get update && sudo apt-get -y -qq install $PKGS
  echo "✅ Packages installed!"
 }
 
 install_omz() {
-  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  echo "📦 Installing Oh my Zsh"
+  rm -rf $HOME/.oh-my-zsh
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --keep-zshrc || true
 }
 
 mount_cfg() {
@@ -36,6 +46,7 @@ mount_cfg() {
 }
 
 change_shell() {
+  echo "🔨 Changing shell to $(which zsh)"
   chsh -s $(which zsh)
 }
 
