@@ -42,6 +42,12 @@ P.S. You can delete this when you're done too. It's your config now :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- disable netrw
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+
+
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -110,6 +116,14 @@ require('lazy').setup({
   -- { 'folke/tokyonight.nvim', config = function() vim.cmd.colorscheme 'tokyonight' end},
   -- { 'jacoborus/tender.vim', config = function() vim.cmd.colorscheme 'tender' end},
 
+  -- nvim-tree
+  {
+    "nvim-tree/nvim-tree.lua",
+    version = "*",
+    config = function()
+      require("nvim-tree").setup {}
+    end,
+  },
 
 
   -- Useful plugin to show you pending keybinds.
@@ -513,6 +527,29 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+local function open_nvim_tree(data)
+  -- buffer is a real file on the disk
+  local real_file = vim.fn.filereadable(data.file) == 1
+  -- buffer is a [No Name]
+  local no_name = data.file == "" and vim.bo[data.buf].buftype == ""
+  if not real_file and not no_name then
+    return
+  end
+  -- open the tree, find the file but don't focus it
+  require("nvim-tree.api").tree.toggle({ focus = false, find_file = true, })
+end
+
+vim.api.nvim_create_autocmd({ "VimEnter" }, { callback = open_nvim_tree })
+
+vim.api.nvim_create_autocmd("BufEnter", {
+  group = vim.api.nvim_create_augroup("NvimTreeClose", {clear = true}),
+  pattern = "NvimTree_*",
+  callback = function()
+    local layout = vim.api.nvim_call_function("winlayout", {})
+    if layout[1] == "leaf" and vim.api.nvim_buf_get_option(vim.api.nvim_win_get_buf(layout[2]), "filetype") == "NvimTree" and layout[3] == nil then vim.cmd("confirm quit") end
+  end
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
