@@ -123,7 +123,6 @@ require('lazy').setup({
     config = function()
       require("nvim-tree").setup {
         hijack_cursor = true,
-        auto_close = true,
         update_focused_file = {
           enable = true,
         }
@@ -225,6 +224,7 @@ vim.o.hlsearch = false
 
 -- Make line numbers default
 vim.wo.number = true
+vim.o.relativenumber = true
 
 -- Enable mouse mode
 vim.o.mouse = 'a'
