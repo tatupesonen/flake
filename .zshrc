@@ -104,6 +104,7 @@ source $ZSH/oh-my-zsh.sh
 alias dotfiles="git -C $HOME/.dotfiles"
 alias vim="nvim"
 alias v="nvim"
+export EDITOR="nvim"
 
 # Git aliases
 
