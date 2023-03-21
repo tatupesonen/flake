@@ -105,4 +105,9 @@ alias dotfiles="git -C $HOME/.dotfiles"
 alias vim="nvim"
 alias v="nvim"
 
+# Git aliases
+
+
+
+[ -f ~/.config/zsh/git-aliases.sh ] && source ~/.config/zsh/git-aliases.sh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
