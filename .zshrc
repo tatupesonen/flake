@@ -108,9 +108,26 @@ export EDITOR="nvim"
 
 alias ls="exa --git"
 
+update_secret() {
+	# Uses yq and kubectl:
+	# https://mikefarah.gitbook.io/yq/
+	local SECRET=$(kubectl get secret $1 -o yaml) || echo "error"
+	local YAML=$(echo $SECRET | yq '.data[] |= @base64d')
+	local TMP=$(mktemp /tmp/secret.XXXXXXXXXXX.yaml)
+	echo $YAML > $TMP
+	$EDITOR $TMP
+	cat $TMP | yq '.data[] |= @base64' | kubectl apply -f -
+	rm $TMP
+}
+alias s8s=update_secret
+
 # Git aliases
 
 export PATH="$HOME/.cargo/bin:/$PATH"
 
 [ -f ~/.config/zsh/git-aliases.sh ] && source ~/.config/zsh/git-aliases.sh
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# NVM
+ export NVM_DIR=~/.nvm
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"  # This loads nvm
