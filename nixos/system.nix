@@ -8,9 +8,13 @@
     alejandra
     nil
     tmux
+    eza
+    zsh
   ];
 
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "23.11";
+  users.defaultUserShell = pkgs.zsh;
+  programs.zsh.enable = true;
 
   services = {
     vscode-server.enable = true;

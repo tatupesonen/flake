@@ -34,35 +34,8 @@
             ++ modules;
         };
     in {
-      wsl = systemConfig "x86_64-linux" [./hosts/wsl.nix nixos-wsl.nixosModules.wsl];
-      laptop = systemConfig "x86_64-linux" [./hosts/laptop.nix];
-      # wsl = nixpkgs.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = [
-      #     nixos-wsl.nixosModules.wsl
-      #     vscode-server.nixosModules.default
-      #     ./hosts/wsl.nix
-      #     # ({pkgs, ...}: {
-      #     #   wsl.enable = true;
-      #     #   wsl.defaultUser = "tatu";
-      #     #   imports = [
-      #     #     ./nixos/system.nix
-      #     #   ];
-      #     # })
-      #   ];
-      # };
-      # laptop = nixpkgs.lib.nixosSystem {
-      #   system = "x86_64-linux";
-      #   modules = [
-      #     vscode-server.nixosModules.default
-      #     ({pkgs, ...}: {
-      #       imports = [
-      #         ./nixos/system.nix
-      #         ./hosts/laptop.nix
-      #       ];
-      #     })
-      #   ];
-      # };
+      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl];
+      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix];
     };
   };
 }
