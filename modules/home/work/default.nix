@@ -3,5 +3,5 @@
   pkgs,
   ...
 }: {
-  imports = [./alacritty.nix ./vscode.nix];
+  imports = [./alacritty.nix ./vscode.nix ./phpstorm.nix];
 }
