@@ -50,7 +50,6 @@
     packages = with pkgs; [
       firefox
       kate
-      vscode
       #  thunderbird
     ];
   };
