@@ -31,7 +31,6 @@
         nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs userConfig;};
           inherit system;
-          inherit userConfig;
           modules =
             [
               home-manager.nixosModules.home-manager

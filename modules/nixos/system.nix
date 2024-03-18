@@ -67,9 +67,6 @@
     LC_TIME = "fi_FI.UTF-8";
   };
 
-  services = {
-    vscode-server.enable = true;
-  };
   nixpkgs.config.allowUnfree = true;
   nix = {
     gc = {
