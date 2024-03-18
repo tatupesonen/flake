@@ -80,6 +80,8 @@
           ./hosts/vm/vm.nix
           ./modules/nixos/nvidia.nix
           ./modules/dev
+          ./modules/misc/docker.nix
+          ./modules/misc/vmware.nix
         ]
         # VM host home modules
         [
