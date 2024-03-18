@@ -14,7 +14,7 @@
     };
     shellAliases = {
       nixpull = "cd $HOME/dotfiles && git pull";
-      update = "sudo nixos-rebuild switch --flake .";
+      update = "sudo nixos-rebuild switch --flake $HOME/dotfiles/flake.nix";
       refresh = "nixpull && update";
     };
     oh-my-zsh = {
