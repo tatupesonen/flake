@@ -46,14 +46,47 @@
                   inherit inputs prof userConfig;
                 };
               })
+              # Default module imported for all hosts
               ./modules/nixos/system.nix
             ]
             ++ modules;
         };
     in {
-      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl vscode-server.nixosModules.default] [./modules/home/common];
-      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix ./modules/home/common] [];
-      vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm] [./modules/home/common ./modules/home/work];
+      # WSL host Nix modules
+      wsl =
+        systemConfig "x86_64-linux" [
+          ./hosts/wsl/wsl.nix
+          nixos-wsl.nixosModules.wsl
+          vscode-server.nixosModules.default
+          ./modules/dev
+        ]
+        # WSL host home modules
+        [
+          ./modules/home/common
+        ];
+      # Laptop host Nix modules
+      laptop =
+        systemConfig "x86_64-linux" [
+          ./hosts/laptop/laptop.nix
+          ./modules/home/common
+          ./modules/dev
+        ]
+        # Laptop host home modules
+        [];
+      # VM host Nix modules
+      vm =
+        systemConfig "x86_64-linux"
+        [
+          ./hosts/vm/vm.nix
+          ./modules/nixos/nvidia.nix
+          ./modules/dev
+        ]
+        # VM host home modules
+        [
+          ./modules/home/common
+          ./modules/home/work
+          ./modules/home/style
+        ];
     };
   };
 }
