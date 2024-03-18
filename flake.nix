@@ -31,9 +31,9 @@
         nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs userConfig;};
           inherit system;
+          inherit userConfig;
           modules =
             [
-              vscode-server.nixosModules.default
               home-manager.nixosModules.home-manager
               ({
                 config,
@@ -52,7 +52,7 @@
             ++ modules;
         };
     in {
-      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl] [./modules/home/common];
+      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl vscode-server.nixosModules.default] [./modules/home/common];
       laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix ./modules/home/common] [];
       vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm] [./modules/home/common ./modules/home/work];
     };
