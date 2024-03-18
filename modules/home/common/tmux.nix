@@ -5,8 +5,6 @@
 }: {
   # tmux
   # TODO: change to use home-manager
-  home.packages = with pkgs; [
-    tmux
-  ];
+  programs.tmux.enable = true;
   home.file.".tmux.conf".source = ../../../dot/tmux/.tmux.conf;
 }

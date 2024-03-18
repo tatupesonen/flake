@@ -22,7 +22,7 @@
     ...
   } @ inputs: {
     nixosConfigurations = let
-      systemConfig = system: modules:
+      systemConfig = system: modules: prof:
         nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs;};
           inherit system;
@@ -30,20 +30,24 @@
             [
               vscode-server.nixosModules.default
               home-manager.nixosModules.home-manager
-              {
+              ({
+                config,
+                pkgs,
+                ...
+              }: {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.tatu = import ./modules/home;
-                home-manager.extraSpecialArgs = {inherit inputs;};
-              }
+                home-manager.extraSpecialArgs = {inherit inputs prof;};
+              })
               ./modules/nixos/system.nix
             ]
             ++ modules;
         };
     in {
-      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl];
-      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix];
-      vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm];
+      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl] [./modules/home/common];
+      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix ./modules/home/common] [];
+      vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm] [./modules/home/common ./modules/home/work];
     };
   };
 }
