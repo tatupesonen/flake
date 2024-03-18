@@ -1,6 +1,7 @@
 {
   config,
   pkgs,
+  userConfig,
   ...
 }: {
   programs.zsh = {
@@ -17,4 +18,8 @@
       theme = "robbyrussell";
     };
   };
+  # Add PHPUnit and whatnot to path
+  home.sessionPath = [
+    "/home/${userConfig.userName}/.config/composer/vendor/bin"
+  ];
 }
