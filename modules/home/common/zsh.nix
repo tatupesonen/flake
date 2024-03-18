@@ -20,7 +20,7 @@
     oh-my-zsh = {
       enable = true;
       plugins = ["git" "z"];
-      theme = "robbyrussell";
+      theme = "bira";
     };
   };
   # Add PHPUnit and whatnot to path
