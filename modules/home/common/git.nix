@@ -1,11 +1,12 @@
 {
   config,
   pkgs,
+  userConfig,
   ...
 }: {
   programs.git.enable = true;
   programs.git = {
-  userName  = "Tatu Pesonen";
-    userEmail = "tatu@narigon.dev";
-	};
+    userName = userConfig.fullName;
+    userEmail = userConfig.userEmail;
+  };
 }

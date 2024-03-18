@@ -2,13 +2,14 @@
   config,
   pkgs,
   prof,
+  userConfig,
   ...
 }: {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   imports = prof;
-  home.username = "tatu";
-  home.homeDirectory = "/home/tatu";
+  home.username = userConfig.userName;
+  home.homeDirectory = "/home/${userConfig.userName}";
 
   home.stateVersion = "23.11"; # Please read the comment before changing.
 

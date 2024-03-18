@@ -2,6 +2,7 @@
   pkgs,
   config,
   inputs,
+  userConfig,
   ...
 }: {
   imports = [inputs.home-manager.nixosModules.default];
@@ -41,9 +42,9 @@
   };
 
   programs.zsh.enable = true;
-  users.users.tatu = {
+  users.users.${userConfig.userName} = {
     isNormalUser = true;
-    description = "Tatu";
+    description = userConfig.fullName;
     shell = pkgs.zsh;
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [

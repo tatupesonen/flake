@@ -1,6 +1,7 @@
 {
   pkgs,
   config,
+  userConfig,
   ...
 }: {
   imports = [
@@ -65,9 +66,9 @@
   # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.tatu = {
+  users.users.${userConfig.userName} = {
     isNormalUser = true;
-    description = "Tatu";
+    description = userConfig.fullName;
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       firefox

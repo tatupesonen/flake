@@ -22,9 +22,14 @@
     ...
   } @ inputs: {
     nixosConfigurations = let
+      userConfig = {
+        userName = "tatu";
+        fullName = "Tatu Pesonen";
+        userEmail = "tatu@narigon.dev";
+      };
       systemConfig = system: modules: prof:
         nixpkgs.lib.nixosSystem {
-          specialArgs = {inherit inputs;};
+          specialArgs = {inherit inputs userConfig;};
           inherit system;
           modules =
             [
@@ -38,7 +43,9 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.tatu = import ./modules/home;
-                home-manager.extraSpecialArgs = {inherit inputs prof;};
+                home-manager.extraSpecialArgs = {
+                  inherit inputs prof userConfig;
+                };
               })
               ./modules/nixos/system.nix
             ]
