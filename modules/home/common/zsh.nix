@@ -12,6 +12,11 @@
     history = {
       size = 10000;
     };
+    shellAliases = {
+      nixpull = "cd $HOME/dotfiles && git pull";
+      update = "sudo nixos-rebuild switch --flake .";
+      refresh = "nixpull && update";
+    };
     oh-my-zsh = {
       enable = true;
       plugins = ["git" "z"];
