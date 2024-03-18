@@ -22,7 +22,7 @@
     ...
   } @ inputs: {
     nixosConfigurations = let
-      systemConfig = system: modules:
+      systemConfig = system: modules: profiles:
         nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs;};
           inherit system;
@@ -33,17 +33,22 @@
               {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users.tatu = import ./modules/home;
-                home-manager.extraSpecialArgs = {inherit inputs;};
+                home-manager.users.tatu = import ./modules/home {
+                  inherit
+                    inputs
+                    profiles
+                    ;
+                };
+                home-manager.extraSpecialArgs = {inherit inputs profiles;};
               }
               ./modules/nixos/system.nix
             ]
             ++ modules;
         };
     in {
-      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl];
-      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix];
-      vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm];
+      wsl = systemConfig "x86_64-linux" [./hosts/wsl/wsl.nix nixos-wsl.nixosModules.wsl] [./modules/home/common];
+      laptop = systemConfig "x86_64-linux" [./hosts/laptop/laptop.nix ./modules/home/common] [];
+      vm = systemConfig "x86_64-linux" [./hosts/vm/vm.nix ./modules/nixos/nvidia.nix ./modules/wm] [./modules/home/common ./modules/home/work];
     };
   };
 }

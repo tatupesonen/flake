@@ -1,11 +1,13 @@
 {
   config,
   pkgs,
+  profiles,
+  inputs,
   ...
 }: {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  imports = [./programs];
+  imports = profiles {inherit inputs config;};
   home.username = "tatu";
   home.homeDirectory = "/home/tatu";
 
