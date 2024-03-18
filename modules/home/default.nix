@@ -1,13 +1,13 @@
 {
   config,
   pkgs,
-  profiles,
+  prof,
   inputs,
   ...
 }: {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  imports = profiles {inherit inputs config;};
+  imports = prof;
   home.username = "tatu";
   home.homeDirectory = "/home/tatu";
 
@@ -91,20 +91,6 @@
     #   echo "Hello, ${config.home.username}!"
     # '')
   ];
-
-  programs.alacritty = {
-    enable = true;
-    # custom settings
-    settings = {
-      env.TERM = "xterm-256color";
-      font = {
-        size = 12;
-        draw_bold_text_with_bright_colors = true;
-      };
-      scrolling.multiplier = 5;
-      selection.save_to_clipboard = true;
-    };
-  };
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.

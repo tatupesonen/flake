@@ -22,7 +22,7 @@
     ...
   } @ inputs: {
     nixosConfigurations = let
-      systemConfig = system: modules: profiles:
+      systemConfig = system: modules: prof:
         nixpkgs.lib.nixosSystem {
           specialArgs = {inherit inputs;};
           inherit system;
@@ -30,17 +30,16 @@
             [
               vscode-server.nixosModules.default
               home-manager.nixosModules.home-manager
-              {
+              ({
+                config,
+                pkgs,
+                ...
+              }: {
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
-                home-manager.users.tatu = import ./modules/home {
-                  inherit
-                    inputs
-                    profiles
-                    ;
-                };
-                home-manager.extraSpecialArgs = {inherit inputs profiles;};
-              }
+                home-manager.users.tatu = import ./modules/home;
+                home-manager.extraSpecialArgs = {inherit inputs prof config pkgs;};
+              })
               ./modules/nixos/system.nix
             ]
             ++ modules;
