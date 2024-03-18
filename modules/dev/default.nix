@@ -3,5 +3,5 @@
   pkgs,
   ...
 }: {
-  imports = [./php.nix];
+  imports = [./php.nix ./rustup.nix ./clang.nix];
 }
