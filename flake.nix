@@ -38,7 +38,7 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.tatu = import ./modules/home;
-                home-manager.extraSpecialArgs = {inherit inputs prof config pkgs;};
+                home-manager.extraSpecialArgs = {inherit inputs prof;};
               })
               ./modules/nixos/system.nix
             ]
