@@ -7,7 +7,9 @@
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    enableAutosuggestions = true;
+    autosuggestion = {
+      enable = false;
+    };
     syntaxHighlighting.enable = true;
     history = {
       size = 10000;
