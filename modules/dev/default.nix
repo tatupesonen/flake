@@ -1,7 +1,9 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
-  imports = [./php.nix ./rustup.nix ./clang.nix ./python.nix];
+  imports = [
+    ./php.nix
+    ./rustup.nix
+    ./clang.nix
+    ./python.nix
+  ];
 }

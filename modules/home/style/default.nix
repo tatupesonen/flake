@@ -1,7 +1,4 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
-  imports = [./bg.nix];
+  imports = [ ./bg.nix ];
 }

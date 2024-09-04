@@ -1,11 +1,6 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
-  environment.systemPackages = with pkgs; [
-  	rofi-wayland
-  ];
+  environment.systemPackages = with pkgs; [ rofi-wayland ];
   programs = {
     hyprland = {
       enable = true;

@@ -3,10 +3,9 @@
   config,
   userConfig,
   ...
-}: {
-  imports = [
-    ./hardware-configuration.nix
-  ];
+}:
+{
+  imports = [ ./hardware-configuration.nix ];
   # Bootloader.
   networking.hostName = "vm";
 
@@ -50,7 +49,10 @@
   users.users.${userConfig.userName} = {
     isNormalUser = true;
     description = userConfig.fullName;
-    extraGroups = ["networkmanager" "wheel"];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [
       firefox
       kate

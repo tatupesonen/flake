@@ -1,7 +1,8 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
-  imports = [./alacritty.nix ./vscode.nix ./phpstorm.nix];
+  imports = [
+    ./alacritty.nix
+    ./vscode.nix
+    ./phpstorm.nix
+  ];
 }

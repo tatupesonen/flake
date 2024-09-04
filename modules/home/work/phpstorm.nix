@@ -1,9 +1,4 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
-  home.packages = with pkgs; [
-    jetbrains.phpstorm
-  ];
+  home.packages = with pkgs; [ jetbrains.phpstorm ];
 }

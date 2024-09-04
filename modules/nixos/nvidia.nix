@@ -1,13 +1,10 @@
+{ config, pkgs, ... }:
 {
-  config,
-  pkgs,
-  ...
-}: {
   boot = {
     initrd = {
-      kernelModules = ["nvidia"];
+      kernelModules = [ "nvidia" ];
     };
-    extraModulePackages = [config.boot.kernelPackages.nvidia_x11];
+    extraModulePackages = [ config.boot.kernelPackages.nvidia_x11 ];
   };
   # If we're on nvidia, enable hyprland nvidia patches
   programs = {
@@ -20,7 +17,7 @@
     NIXOS_OZONE_WL = "1";
   };
   xdg.portal.enable = true;
-  xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk];
+  xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   # Hardware
   hardware = {
     opengl = {

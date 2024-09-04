@@ -3,8 +3,9 @@
   pkgs,
   environment,
   ...
-}: {
- programs.fzf = {
+}:
+{
+  programs.fzf = {
     enable = true;
     enableZshIntegration = true;
     enableBashIntegration = true;

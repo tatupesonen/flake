@@ -4,8 +4,9 @@
   inputs,
   userConfig,
   ...
-}: {
-  imports = [inputs.home-manager.nixosModules.default];
+}:
+{
+  imports = [ inputs.home-manager.nixosModules.default ];
   environment.systemPackages = with pkgs; [
     neovim
     fzf
@@ -16,9 +17,10 @@
     nil
     tmux
     eza
+    nixfmt-rfc-style
   ];
 
-  system.stateVersion = "23.11";
+  system.stateVersion = "24.05";
   networking.networkmanager.enable = true;
   time.timeZone = "Europe/Helsinki";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -46,7 +48,10 @@
     isNormalUser = true;
     description = userConfig.fullName;
     shell = pkgs.zsh;
-    extraGroups = ["networkmanager" "wheel"];
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
     packages = with pkgs; [
       firefox
       kate
@@ -75,17 +80,21 @@
     };
 
     settings = {
-      experimental-features = ["nix-command" "flakes"];
+      experimental-features = [
+        "nix-command"
+        "flakes"
+      ];
       auto-optimise-store = true;
       accept-flake-config = true;
-      trusted-users = ["root" "@wheel"];
+      trusted-users = [
+        "root"
+        "@wheel"
+      ];
       substituters = [
         "https://nix-community.cachix.org"
         "https://cache.nixos.org/"
       ];
-      trusted-public-keys = [
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
+      trusted-public-keys = [ "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=" ];
     };
   };
 }
