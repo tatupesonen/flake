@@ -52,6 +52,7 @@
                 )
                 # Default module imported for all hosts
                 ./modules/nixos/system.nix
+                ./modules/nixos/ssh.nix
               ] ++ modules;
             };
         in

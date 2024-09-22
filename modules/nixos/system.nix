@@ -71,6 +71,7 @@
     LC_TIME = "fi_FI.UTF-8";
   };
 
+
   nixpkgs.config.allowUnfree = true;
   nix = {
     gc = {
