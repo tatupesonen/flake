@@ -26,6 +26,7 @@
         userName = "tatu";
         fullName = "Tatu Pesonen";
         userEmail = "tatu@narigon.dev";
+        root = true;
       };
       systemConfig = system: modules: prof:
         nixpkgs.lib.nixosSystem {
@@ -46,7 +47,7 @@
                     useGlobalPkgs = true;
                     useUserPackages = true;
                     users = {
-                      "{userConfig.userName}" = import ./modules/home;
+                      "${userConfig.userName}" = import ./modules/home;
                     };
                     extraSpecialArgs = {
                       inherit inputs prof userConfig;

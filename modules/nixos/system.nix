@@ -6,21 +6,11 @@
   ...
 }: {
   environment.systemPackages = with pkgs; [
-    # neovim
-    # fzf
     git
-    # rustup
-    # wget
-    # alejandra
-    # nil
-    # tmux
-    # eza
-    # nixfmt-rfc-style
+    nvim
   ];
 
   system.stateVersion = "24.05";
-  # networking.networkmanager.enable = false;
-  # networking.wireless.enable = true;
   time.timeZone = "Europe/Helsinki";
   i18n.defaultLocale = "en_US.UTF-8";
   services.printing.enable = true;
@@ -42,6 +32,7 @@
   #   #media-session.enable = true;
   # };
 
+  programs.zsh.enable = true;
   users.users.${userConfig.userName} = {
     isNormalUser = true;
     description = userConfig.fullName;
