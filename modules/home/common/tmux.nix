@@ -1,5 +1,8 @@
-{ config, pkgs, ... }:
 {
+  config,
+  pkgs,
+  ...
+}: {
   # tmux
   # TODO: change to use home-manager
   programs.tmux.enable = true;

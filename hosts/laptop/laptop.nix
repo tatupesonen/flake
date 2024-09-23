@@ -1,4 +1,3 @@
-{ pkgs, ... }:
-{
+{pkgs, ...}: {
   networking.hostName = "alatreon";
 }

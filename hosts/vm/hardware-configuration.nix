@@ -7,9 +7,8 @@
   pkgs,
   modulesPath,
   ...
-}:
-{
-  imports = [ ];
+}: {
+  imports = [];
 
   boot.initrd.availableKernelModules = [
     "ata_piix"
@@ -20,9 +19,9 @@
     "sd_mod"
     "sr_mod"
   ];
-  boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
-  boot.extraModulePackages = [ ];
+  boot.initrd.kernelModules = [];
+  boot.kernelModules = [];
+  boot.extraModulePackages = [];
   boot.loader.grub.enable = true;
   boot.loader.grub.device = "/dev/sda";
   boot.loader.grub.useOSProber = true;
@@ -40,7 +39,7 @@
 
   boot.initrd.luks.devices."luks-a39ecb1a-5c7d-4a0c-ba4e-4b02663eedf5".device = "/dev/disk/by-uuid/a39ecb1a-5c7d-4a0c-ba4e-4b02663eedf5";
 
-  swapDevices = [ ];
+  swapDevices = [];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's

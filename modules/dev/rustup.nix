@@ -1,4 +1,7 @@
-{ config, pkgs, ... }:
 {
-  environment.systemPackages = with pkgs; [ rustup ];
+  config,
+  pkgs,
+  ...
+}: {
+  environment.systemPackages = with pkgs; [rustup];
 }

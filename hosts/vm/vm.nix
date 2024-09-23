@@ -3,9 +3,8 @@
   config,
   userConfig,
   ...
-}:
-{
-  imports = [ ./hardware-configuration.nix ];
+}: {
+  imports = [./hardware-configuration.nix];
   # Bootloader.
   networking.hostName = "vm";
 

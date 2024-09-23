@@ -3,8 +3,7 @@
   pkgs,
   userConfig,
   ...
-}:
-{
+}: {
   programs.zsh = {
     enable = true;
     enableCompletion = true;
@@ -62,5 +61,5 @@
     };
   };
   # Add PHPUnit and whatnot to path
-  home.sessionPath = [ "/home/${userConfig.userName}/.config/composer/vendor/bin" ];
+  home.sessionPath = ["/home/${userConfig.userName}/.config/composer/vendor/bin"];
 }

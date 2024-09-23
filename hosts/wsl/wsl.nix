@@ -1,5 +1,8 @@
-{ pkgs, userConfig, ... }:
 {
+  pkgs,
+  userConfig,
+  ...
+}: {
   services = {
     vscode-server.enable = true;
   };
