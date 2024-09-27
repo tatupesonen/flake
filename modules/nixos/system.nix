@@ -7,7 +7,6 @@
 }: {
   environment.systemPackages = with pkgs; [
     git
-    nvim
   ];
 
   system.stateVersion = "24.05";

@@ -2,7 +2,7 @@
   description = "NixOS Flake for @tatupesonen configs";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
-    # nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
     #sops-nix.url = "github:Mic92/sops-nix";
     home-manager = {
@@ -19,6 +19,7 @@
     vscode-server,
     home-manager,
     deploy-rs,
+    nixpkgs-unstable,
     ...
   } @ inputs: {
     nixosConfigurations = let
@@ -31,6 +32,10 @@
       systemConfig = system: modules: prof:
         nixpkgs.lib.nixosSystem {
           specialArgs = {
+            pkgs-unstable = import nixpkgs-unstable {
+              inherit system;
+              config.allowUnfree = true;
+            };
             inherit inputs userConfig;
           };
           inherit system;
@@ -92,6 +97,20 @@
           ./modules/dev
           ./modules/misc/docker.nix
           ./modules/misc/vmware.nix
+        ]
+        # VM host home modules
+        [
+          ./modules/home/common
+          ./modules/home/work
+          ./modules/home/style
+        ];
+      vindicta =
+        systemConfig "x86_64-linux"
+        [
+          ./hosts/vindicta/configuration.nix
+          ./modules/dev
+          ./modules/misc/docker.nix
+          ./modules/work
         ]
         # VM host home modules
         [
