@@ -12,7 +12,7 @@
   system.stateVersion = "24.05";
   time.timeZone = "Europe/Helsinki";
   i18n.defaultLocale = "en_US.UTF-8";
-  services.printing.enable = true;
+  services.printing.enable = false;
 
   # Enable sound with pipewire.
   # sound.enable = true;
