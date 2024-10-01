@@ -19,7 +19,7 @@
 
     bind '\' split-window -h
     bind '-' split-window -v
-    bind r source-file ~/dotfiles/dot/tmux/.tmux.conf \; display "Configuration reloaded from home"
+    bind r source-file ~/.config/tmux/tmux.conf \; display "Configuration reloaded from home"
 
     # Kill pane without confirm
     bind-key x kill-pane
