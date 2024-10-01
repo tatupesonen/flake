@@ -58,8 +58,6 @@
               home-manager.nixosModules.home-manager
               (
                 {
-                  config,
-                  pkgs,
                   ...
                 }: {
                   home-manager = {

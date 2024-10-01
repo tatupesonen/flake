@@ -1,7 +1,4 @@
 {
-  config,
-  pkgs,
-  userConfig,
   ...
 }: {
   # Enable vmware guest agent

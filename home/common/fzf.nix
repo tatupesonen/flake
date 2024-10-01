@@ -1,7 +1,4 @@
 {
-  config,
-  pkgs,
-  environment,
   ...
 }: {
   programs.fzf = {
