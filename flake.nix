@@ -49,7 +49,7 @@
                     useGlobalPkgs = true;
                     useUserPackages = true;
                     users = {
-                      "${userConfig.userName}" = import ./modules/home;
+                      "${userConfig.userName}" = import ./home;
                     };
                     extraSpecialArgs = {
                       inherit inputs prof userConfig;
@@ -74,13 +74,13 @@
           vscode-server.nixosModules.default
         ]
         # WSL host home modules
-        [./modules/home/common];
+        [./home/common];
       # Laptop host Nix modules
       laptop =
         systemConfig "x86_64-linux"
         [
           ./hosts/laptop/laptop.nix
-          ./modules/home/common
+          ./home/common
           ./modules/dev
         ]
         # Laptop host home modules
@@ -94,9 +94,9 @@
           ./modules/work
         ]
         [
-          ./modules/home/common
-          ./modules/home/work
-          ./modules/home/style
+          ./home/common
+          ./home/work
+          ./home/style
         ];
     };
   };

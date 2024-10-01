@@ -39,5 +39,4 @@
     formatted = builtins.concatStringsSep "\n" sortedUnique;
   in
     formatted;
-  # gcloud
 }
