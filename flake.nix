@@ -4,13 +4,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-24.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
-    #sops-nix.url = "github:Mic92/sops-nix";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     vscode-server.url = "github:nix-community/nixos-vscode-server";
-    deploy-rs.url = "github:serokell/deploy-rs";
   };
   outputs = {
     self,
@@ -18,7 +16,6 @@
     nixos-wsl,
     vscode-server,
     home-manager,
-    deploy-rs,
     nixpkgs-unstable,
     ...
   } @ inputs: {
@@ -88,22 +85,6 @@
         ]
         # Laptop host home modules
         [];
-      # VM host Nix modules
-      vm =
-        systemConfig "x86_64-linux"
-        [
-          ./hosts/vm/vm.nix
-          ./modules/nixos/nvidia.nix
-          ./modules/dev
-          ./modules/misc/docker.nix
-          ./modules/misc/vmware.nix
-        ]
-        # VM host home modules
-        [
-          ./modules/home/common
-          ./modules/home/work
-          ./modules/home/style
-        ];
       vindicta =
         systemConfig "x86_64-linux"
         [
@@ -112,7 +93,6 @@
           ./modules/misc/docker.nix
           ./modules/work
         ]
-        # VM host home modules
         [
           ./modules/home/common
           ./modules/home/work
