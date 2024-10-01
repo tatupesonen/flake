@@ -22,7 +22,7 @@
     nixpkgs-unstable,
     ...
   } @ inputs: {
-    formatter = nixpkgs.legacyPackages."x86_64-linux".nixpkgs-fmt;
+    formatter."x86_64-linux" = nixpkgs.legacyPackages."x86_64-linux".alejandra;
     devShells = {
       x86_64-linux.default = let
         pkgs = import nixpkgs {

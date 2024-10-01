@@ -55,7 +55,7 @@
         "git"
         "z"
       ];
-      theme = "af-magic";
+      theme = "bureau";
     };
   };
   # Add PHPUnit and whatnot to path

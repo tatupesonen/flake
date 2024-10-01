@@ -80,7 +80,7 @@
     bind -n M-9 select-window -t 9
 
     # Redraw status every second
-    set-option -s status-interval 1
+    set-option -g status-interval 1
 
     # vim binds goodness
     bind h select-pane -L
