@@ -8,10 +8,13 @@
       url = "github:nix-community/home-manager/release-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixvim = {
+      url = "github:nix-community/nixvim/nixos-24.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     vscode-server.url = "github:nix-community/nixos-vscode-server";
   };
   outputs = {
-    self,
     nixpkgs,
     nixos-wsl,
     vscode-server,
@@ -19,6 +22,7 @@
     nixpkgs-unstable,
     ...
   } @ inputs: {
+    formatter = nixpkgs.legacyPackages."x86_64-linux".nixpkgs-fmt;
     devShells = {
       x86_64-linux.default = let
         pkgs = import nixpkgs {
@@ -85,19 +89,10 @@
           ./hosts/wsl/wsl.nix
           nixos-wsl.nixosModules.wsl
           vscode-server.nixosModules.default
+          ./modules/nixvim
         ]
         # WSL host home modules
         [./home/common];
-      # Laptop host Nix modules
-      laptop =
-        systemConfig "x86_64-linux"
-        [
-          ./hosts/laptop/laptop.nix
-          ./home/common
-          ./modules/dev
-        ]
-        # Laptop host home modules
-        [];
       vindicta =
         systemConfig "x86_64-linux"
         [
@@ -105,6 +100,7 @@
           ./modules/dev
           ./modules/misc/docker.nix
           ./modules/work
+          ./modules/nixvim
         ]
         [
           ./home/common
