@@ -7,6 +7,7 @@
     ./rustup.nix
     ./clang.nix
     ./python.nix
+    ./golang.nix
   ];
 
   environment.systemPackages = with pkgs; [
