@@ -60,5 +60,5 @@
     };
   };
   # Add PHPUnit and whatnot to path
-  home.sessionPath = ["/home/${userConfig.userName}/.config/composer/vendor/bin"];
+  home.sessionPath = ["/home/${userConfig.userName}/.config/composer/vendor/bin" "/home/${userConfig.userName}/.vscode-server/bin"];
 }

@@ -9,6 +9,9 @@
     enable = true;
     defaultUser = userConfig.userName;
     docker-desktop.enable = true;
+    wslConf = {
+      interop.appendWindowsPath = true;
+    };
   };
   networking.hostName = "wsl";
 }

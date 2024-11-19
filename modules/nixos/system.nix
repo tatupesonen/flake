@@ -53,6 +53,11 @@
     LC_TIME = "fi_FI.UTF-8";
   };
 
+  services.mysql = {
+    enable = true;
+    package = pkgs.mysql80;
+  };
+
   nixpkgs.config.allowUnfree = true;
   nix = {
     gc = {
