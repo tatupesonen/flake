@@ -1,5 +1,6 @@
 {
   pkgs,
+  config,
   ...
 }: {
   imports = [
@@ -10,6 +11,17 @@
     ./golang.nix
   ];
 
+  services.rsyslogd.enable = true;
+  programs.nix-ld = {
+    enable = true;
+    package = pkgs.nix-ld-rs; # only for NixOS 24.05
+  };
+  services.rsyslogd.extraConfig = ''
+    # Custom rsyslog configuration
+    *.*  @127.0.0.1:8002
+    *.* /var/log/all.log
+  '';
+
   environment.systemPackages = with pkgs; [
     wget
     neofetch
@@ -18,6 +30,8 @@
     xz
     unzip
     p7zip
+    rsyslog
+    config.boot.kernelPackages.perf
 
     # utils
     ripgrep # recursively searches directories for a regex pattern

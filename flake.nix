@@ -12,7 +12,10 @@
       url = "github:nix-community/nixvim/nixos-24.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    vscode-server.url = "github:nix-community/nixos-vscode-server";
+    vscode-server = {
+      url = "github:nix-community/nixos-vscode-server";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
   outputs = {
     nixpkgs,
@@ -57,9 +60,7 @@
             [
               home-manager.nixosModules.home-manager
               (
-                {
-                  ...
-                }: {
+                {...}: {
                   home-manager = {
                     useGlobalPkgs = true;
                     useUserPackages = true;

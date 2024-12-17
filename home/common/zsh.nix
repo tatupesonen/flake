@@ -1,7 +1,4 @@
-{
-  userConfig,
-  ...
-}: {
+{userConfig, ...}: {
   programs.zsh = {
     enable = true;
     enableCompletion = true;

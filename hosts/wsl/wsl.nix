@@ -1,7 +1,4 @@
-{
-  userConfig,
-  ...
-}: {
+{userConfig, ...}: {
   services = {
     vscode-server.enable = true;
   };

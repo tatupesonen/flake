@@ -3,7 +3,7 @@
   pkgs,
   ...
 }: {
-  boot = {
+  config.boot = {
     initrd = {
       kernelModules = ["nvidia"];
     };
