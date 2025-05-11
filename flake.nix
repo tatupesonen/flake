@@ -109,7 +109,7 @@
       vm =
         systemConfig "x86_64-linux"
         [
-          ./hosts/hosts/vm/configuration.nix
+          ./hosts/vm/configuration.nix
           ./modules/dev
           ./modules/misc/vmware.nix
           ./modules/nixvim
