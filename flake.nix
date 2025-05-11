@@ -106,7 +106,7 @@
           ./home/work
           ./home/style
         ];
-      vindicta =
+      vm =
         systemConfig "x86_64-linux"
         [
           ./hosts/hosts/vm/configuration.nix
