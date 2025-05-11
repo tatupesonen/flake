@@ -106,6 +106,18 @@
           ./home/work
           ./home/style
         ];
+      vindicta =
+        systemConfig "x86_64-linux"
+        [
+          ./hosts/hosts/vm/configuration.nix
+          ./modules/dev
+          ./modules/misc/vmware.nix
+          ./modules/nixvim
+        ]
+        [
+          ./home/common
+          ./home/style
+        ];
     };
   };
 }
