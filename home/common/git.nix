@@ -4,16 +4,5 @@
     enable = true;
     userName = userConfig.fullName;
     userEmail = userConfig.userEmail;
-
-    extraConfig = {
-      commit.gpgsign = true;
-      #user.signingKey = "~/.ssh/id_ed25519.pub";
-      gpg = {
-        format = "ssh";
-        #ssh = {
-        #  allowedSignersFile = "~/.ssh/allowed_signers";
-        #};
-      };
-    };
   };
 }

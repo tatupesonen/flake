@@ -110,13 +110,16 @@
         systemConfig "x86_64-linux"
         [
           ./hosts/vm/vm.nix
-          #./modules/dev
+          ./modules/dev
+          ./modules/wm/plasma
+	  ./modules/demo/k9s.nix
           ./modules/misc/vmware.nix
-          #./modules/nixvim
+          ./modules/nixvim
         ]
         [
-          #./home/common
-          #./home/style
+          ./home/common
+          ./home/style
+	  ./home/work
         ];
     };
   };
