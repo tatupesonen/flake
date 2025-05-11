@@ -7,7 +7,7 @@
 
     extraConfig = {
       commit.gpgsign = true;
-      user.signingKey = "~/.ssh/id_ed25519.pub";
+      #user.signingKey = "~/.ssh/id_ed25519.pub";
       gpg = {
         format = "ssh";
         #ssh = {
