@@ -1,12 +1,11 @@
 {...}: {
-  
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 1234 ];
+    allowedTCPPorts = [22 1234];
   };
   services.openssh = {
     enable = true;
-    ports = [ 22 ];
+    ports = [22];
     settings = {
       PasswordAuthentication = false;
       UseDns = true;

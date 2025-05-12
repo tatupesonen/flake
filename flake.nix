@@ -44,7 +44,7 @@
         userName = "tatu";
         fullName = "Tatu Pesonen";
         userEmail = "tatu@narigon.dev";
-	initialHashedPassword = "$6$rKal./E2hSflQJ5z$JTRYar2UmvIJ0j8dhYvmR1xWivdiwidsMTm43AUcq0yKDuyamDTaY65m4wCYKUkZkfn1Z88lvwN2KxHMkBD3I0";
+        initialHashedPassword = "$6$rKal./E2hSflQJ5z$JTRYar2UmvIJ0j8dhYvmR1xWivdiwidsMTm43AUcq0yKDuyamDTaY65m4wCYKUkZkfn1Z88lvwN2KxHMkBD3I0";
         root = true;
       };
       systemConfig = system: modules: prof:
@@ -113,18 +113,18 @@
           ./hosts/vm/vm.nix
           ./modules/dev
           ./modules/wm/plasma
-	  #./modules/demo/k9s.nix
-	  #./modules/demo/ssh.nix
+          #./modules/demo/k9s.nix
+          #./modules/demo/ssh.nix
           #./modules/demo/kuma.nix
           #./modules/misc/docker.nix
-	  #./modules/demo/reverse_proxy.nix
+          #./modules/demo/reverse_proxy.nix
           ./modules/misc/vmware.nix
           ./modules/nixvim
         ]
         [
           ./home/common
           ./home/style
-	  ./home/work
+          ./home/work
         ];
     };
   };
