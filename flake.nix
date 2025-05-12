@@ -44,7 +44,6 @@
         userName = "tatu";
         fullName = "Tatu Pesonen";
         userEmail = "tatu@narigon.dev";
-        initialHashedPassword = "$6$rKal./E2hSflQJ5z$JTRYar2UmvIJ0j8dhYvmR1xWivdiwidsMTm43AUcq0yKDuyamDTaY65m4wCYKUkZkfn1Z88lvwN2KxHMkBD3I0";
         root = true;
       };
       systemConfig = system: modules: prof:
