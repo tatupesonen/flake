@@ -6,6 +6,7 @@
   imports = [./hardware-configuration.nix];
   # Bootloader.
   networking.hostName = "vm";
+  boot.extraModprobeConfig = "options kvm_intel nested=1";
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
@@ -16,8 +17,23 @@
     xkbVariant = "";
   };
 
+  virtualisation.libvirtd = {
+  enable = true;
+  qemu = {
+    package = pkgs.qemu_kvm;
+    runAsRoot = true;
+    swtpm.enable = true;
+    ovmf = {
+      enable = true;
+      packages = [(pkgs.OVMF.override {
+        secureBoot = true;
+        tpmSupport = true;
+      }).fd];
+    };
+  };
+};
+
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
