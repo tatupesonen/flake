@@ -36,7 +36,6 @@
           "K" = "hover";
         };
       };
-      rust-tools.enable = true;
       bufferline.enable = true;
       gitsigns = {
         enable = true;
