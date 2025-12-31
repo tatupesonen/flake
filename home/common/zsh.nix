@@ -55,6 +55,11 @@
       ];
       theme = "bureau";
     };
+    initExtra = ''
+      autoload -Uz edit-command-line
+      zle -N edit-command-line
+      bindkey '^x^e' edit-command-line
+    '';
   };
   # Add PHPUnit and whatnot to path
   home.sessionPath = [
