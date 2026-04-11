@@ -12,8 +12,14 @@
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 
-      services.openssh.enable = true;
-      environment.systemPackages = with pkgs; [vim];
+      services.openssh = {
+        enable = true;
+        settings = {
+          PermitRootLogin = "no";
+          PasswordAuthentication = false;
+        };
+      };
+      environment.systemPackages = [pkgs.vim];
     };
   };
 }

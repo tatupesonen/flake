@@ -3,12 +3,6 @@ _: {
     programs.home-manager.enable = true;
     home.sessionVariables.EDITOR = "nvim";
 
-    programs.git = {
-      enable = true;
-      settings.user.name = "Tatu Pesonen";
-      settings.user.email = "tatu@narigon.dev";
-    };
-
     programs.fzf = {
       enable = true;
       enableZshIntegration = true;
@@ -41,9 +35,9 @@ _: {
       };
       history.size = 30000;
       shellAliases = {
-        nixpull = "cd $HOME/dotfiles && git pull";
-        nixbackup = ''cd $HOME/dotfiles && git add . && git commit -m "backup: $(date -I)" && git push'';
-        update = "sudo nixos-rebuild switch --flake $HOME/dotfiles --impure";
+        nixpull = "cd $HOME/flake && git pull";
+        nixbackup = ''cd $HOME/flake && git add . && git commit -m "backup: $(date -I)" && git push'';
+        update = "sudo nixos-rebuild switch --flake $HOME/flake --impure";
         refresh = "nixpull && update";
       };
       oh-my-zsh = {

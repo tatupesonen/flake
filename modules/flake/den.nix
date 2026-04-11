@@ -32,7 +32,6 @@
         experimental-features = ["nix-command" "flakes"];
         max-jobs = "auto";
         auto-optimise-store = true;
-        accept-flake-config = true;
         trusted-users = ["root" "@wheel"];
         substituters = [
           "https://cache.nixos.org/"

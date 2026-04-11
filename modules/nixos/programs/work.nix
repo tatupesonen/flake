@@ -13,6 +13,7 @@ _: {
       };
 
       services.tailscale.enable = true;
+      # Required by Tailscale for asymmetric routing
       networking.firewall.checkReversePath = "loose";
 
       environment.systemPackages = with pkgs; [

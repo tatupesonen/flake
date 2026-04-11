@@ -12,9 +12,6 @@ in {
   den.aspects.tatu = {
     includes = [
       den.provides.define-user
-      den.aspects.hm-niri
-      den.aspects.hm-noctalia
-      den.aspects.hm-alacritty
       den.aspects.hm-shell
       den.aspects.neovim
     ];
@@ -22,20 +19,14 @@ in {
     user =
       {
         isNormalUser = true;
-        extraGroups = ["networkmanager" "wheel" "docker"];
+        extraGroups = ["wheel"];
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC0TRPtsjD7CV476AeJ1c2GbFIrrGc4Tq66CBjnSBmwu tatu@narigon.dev"
         ];
       }
-      // (
-        if hasSecrets
-        then {
-          hashedPasswordFile = "/run/secrets-for-users/tatu-password";
-        }
-        else {
-          initialPassword = "changeme";
-        }
-      );
+      // (lib.optionalAttrs hasSecrets {
+        hashedPasswordFile = "/run/secrets-for-users/tatu-password";
+      });
 
     homeManager = {config, ...}: {
       programs.git = {
@@ -58,11 +49,18 @@ in {
       home.file.".ssh/allowed_signers".text = "tatu@narigon.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC0TRPtsjD7CV476AeJ1c2GbFIrrGc4Tq66CBjnSBmwu";
     };
 
-    nixos = {pkgs, ...}: {
+    nixos = {
+      config,
+      pkgs,
+      ...
+    }: {
       programs.zsh.enable = true;
       users.users.tatu = {
         description = "Tatu Pesonen";
         shell = pkgs.zsh;
+        extraGroups =
+          lib.optionals config.networking.networkmanager.enable ["networkmanager"]
+          ++ lib.optionals config.virtualisation.docker.enable ["docker"];
       };
       users.mutableUsers = !hasSecrets;
 
