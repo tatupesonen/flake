@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Safe: traditional partition declarations for existing system.
   # Migrate to full disko.devices later after verifying stability.
   den.aspects.vindicta.nixos = {

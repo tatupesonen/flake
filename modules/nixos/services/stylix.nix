@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.stylix.nixos = {pkgs, ...}: {
     stylix = {
       enable = true;

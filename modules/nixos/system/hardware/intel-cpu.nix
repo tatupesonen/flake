@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.intel-cpu.nixos = {
     config,
     lib,

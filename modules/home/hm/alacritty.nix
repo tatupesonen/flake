@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.hm-alacritty.homeManager = {
     programs.alacritty = {
       enable = true;

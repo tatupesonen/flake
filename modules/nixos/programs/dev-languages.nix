@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.dev-languages.nixos = {pkgs, ...}: {
     environment.systemPackages = with pkgs; [
       clang

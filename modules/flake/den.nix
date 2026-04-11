@@ -8,16 +8,13 @@
 
   den.ctx.user.includes = [den._.mutual-provider];
 
-  den.default.nixos = {pkgs, ...}: {
+  den.default.nixos = {...}: {
     imports = [
       inputs.disko.nixosModules.disko
       inputs.nixos-facter-modules.nixosModules.facter
       inputs.stylix.nixosModules.stylix
       inputs.sops-nix.nixosModules.sops
-      inputs.niri.nixosModules.niri
     ];
-
-    niri-flake.cache.enable = false;
 
     sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../../secrets/secrets.yaml) ../../secrets/secrets.yaml;
     sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];

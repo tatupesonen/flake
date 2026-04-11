@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.work = {
     nixos = {
       config,

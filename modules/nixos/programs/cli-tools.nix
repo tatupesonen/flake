@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.cli-tools.nixos = {pkgs, ...}: {
     programs.nix-ld.enable = true;
 

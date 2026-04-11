@@ -211,10 +211,10 @@ cmd_deploy() {
 
   git_stage
   info "Deploying ${config} to ${target}:${port}..."
-  NIX_SSHOPTS="-t -p ${port}" nixos-rebuild switch \
+  NIX_SSHOPTS="-p ${port}" nixos-rebuild switch \
     --flake ".#${config}" \
     --target-host "${target}" \
-    --sudo
+    --ask-sudo-password
   ok "Deploy complete"
 }
 

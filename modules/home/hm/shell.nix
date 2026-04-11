@@ -1,5 +1,5 @@
-{...}: {
-  den.aspects.hm-shell.homeManager = {...}: {
+_: {
+  den.aspects.hm-shell.homeManager = _: {
     programs.home-manager.enable = true;
     home.sessionVariables.EDITOR = "nvim";
 

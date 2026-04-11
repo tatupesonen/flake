@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.pipewire.nixos = {
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;

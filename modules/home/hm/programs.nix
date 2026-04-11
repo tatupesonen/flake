@@ -4,7 +4,7 @@
       den.aspects.hm-shell
     ];
 
-    homeManager = {...}: {
+    homeManager = _: {
       # Preserve user's custom tmux theme — disable stylix's tmux target
       stylix.targets.tmux.enable = false;
 

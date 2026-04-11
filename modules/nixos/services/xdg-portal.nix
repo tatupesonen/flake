@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.xdg-portal.nixos = {pkgs, ...}: {
     security.polkit.enable = true;
 

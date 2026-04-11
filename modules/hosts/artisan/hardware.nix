@@ -1,5 +1,5 @@
-{...}: {
-  den.aspects.artisan.nixos = {modulesPath, ...}: {
+_: {
+  den.aspects.artisan.nixos = {...}: {
     hardware.facter.reportPath = ./facter.json;
 
     disko.devices.disk.main = {

@@ -1,9 +1,5 @@
-{...}: {
-  den.aspects.nvidia.nixos = {
-    config,
-    pkgs,
-    ...
-  }: {
+_: {
+  den.aspects.nvidia.nixos = {config, ...}: {
     boot.initrd.kernelModules = ["nvidia"];
     services.xserver.videoDrivers = ["nvidia"];
 

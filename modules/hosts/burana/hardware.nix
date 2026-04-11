@@ -1,5 +1,5 @@
-{...}: {
-  den.aspects.burana.nixos = {modulesPath, ...}: {
+_: {
+  den.aspects.burana.nixos = {...}: {
     hardware.facter.reportPath = ./facter.json;
 
     disko.devices.disk.main = {

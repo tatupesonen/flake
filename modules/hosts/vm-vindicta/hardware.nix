@@ -1,4 +1,4 @@
-{...}: {
+_: {
   den.aspects.vm-vindicta.nixos = {
     lib,
     modulesPath,

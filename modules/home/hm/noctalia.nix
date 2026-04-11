@@ -1,6 +1,5 @@
-{...}: let
+_: let
   noctaliaSettings = (builtins.fromJSON (builtins.readFile ../../nixos/services/noctalia.json)).settings;
-  wallpaper = builtins.toString ../../nixos/services/wallpaper.jpg;
 in {
   den.aspects.hm-noctalia.homeManager = {config, ...}: {
     programs.noctalia-shell = {

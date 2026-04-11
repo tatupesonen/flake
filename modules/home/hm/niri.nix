@@ -1,4 +1,4 @@
-{...}: let
+_: let
   noctalia = cmd: ["noctalia-shell" "ipc" "call"] ++ (builtins.filter builtins.isString (builtins.split " " cmd));
 in {
   den.aspects.hm-niri.homeManager = {
@@ -72,7 +72,9 @@ in {
 
       window-rules = [
         {
-          geometry-corner-radius = let r = 8.0; in {
+          geometry-corner-radius = let
+            r = 8.0;
+          in {
             top-left = r;
             top-right = r;
             bottom-left = r;
