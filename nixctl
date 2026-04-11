@@ -1,0 +1,228 @@
+#!/usr/bin/env bash
+# nixctl — NixOS fleet management
+#
+# Self-bootstraps all dependencies via nix shell.
+# No manual installs required — just needs nix.
+#
+# Usage:
+#   ./nixctl                        Interactive menu
+#   ./nixctl build [config]         Build a configuration
+#   ./nixctl switch [config]        Apply configuration locally
+#   ./nixctl deploy [config] [target] [port]  Deploy to remote host
+#   ./nixctl update [input]         Update flake inputs (or a specific one)
+#   ./nixctl iso                    Build installer ISO
+
+set -euo pipefail
+
+# ── Self-bootstrap ────────────────────────────────────────────────
+# Re-exec with all required tools available via nix shell.
+# After first run, deps are cached and startup is near-instant.
+if [[ -z "${NIXCTL_WRAPPED:-}" ]]; then
+  exec env NIXCTL_WRAPPED=1 nix shell \
+    nixpkgs#{gum,jq,nixos-rebuild} \
+    --command bash "$0" "$@"
+fi
+
+# ── Setup ─────────────────────────────────────────────────────────
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_ROOT"
+
+if [[ ! -d modules/hosts ]]; then
+  echo "Error: not in nixos-config repo" >&2
+  exit 1
+fi
+
+# ── Utilities ─────────────────────────────────────────────────────
+die() {
+  gum style --foreground 1 -- "$@" >&2
+  exit 1
+}
+
+info() { gum style --foreground 4 -- "$@"; }
+ok()   { gum style --foreground 2 -- "$@"; }
+warn() { gum style --foreground 3 -- "$@"; }
+
+heading() {
+  gum style --border rounded --padding "0 1" --bold -- "$1"
+  echo
+}
+
+# Stage all files so Nix can see them (flakes require git-tracked files)
+git_stage() {
+  git add -A
+}
+
+# ── Host helpers ──────────────────────────────────────────────────
+
+# List all nixosConfigurations from the flake
+list_configs() {
+  nix eval .#nixosConfigurations \
+    --apply 'x: builtins.attrNames x' \
+    --json 2>/dev/null \
+    | jq -r '.[]'
+}
+
+# Interactive config picker, or use the argument if given
+pick_config() {
+  local header="$1"
+  local arg="${2:-}"
+
+  if [[ -n "$arg" ]]; then
+    echo "$arg"
+    return 0
+  fi
+
+  local configs
+  configs="$(list_configs)"
+  if [[ -z "$configs" ]]; then
+    die "No nixosConfigurations found in flake"
+  fi
+  echo "$configs" | gum choose --header "$header"
+}
+
+# ── build ─────────────────────────────────────────────────────────
+cmd_build() {
+  heading "Build"
+  local config
+  config="$(pick_config "Select configuration to build" "${1:-}")"
+
+  git_stage
+  info "Building ${config}..."
+  nix build ".#nixosConfigurations.${config}.config.system.build.toplevel"
+  ok "Build succeeded — result in ./result"
+}
+
+# ── switch ────────────────────────────────────────────────────────
+cmd_switch() {
+  heading "Switch (local)"
+  local config
+  config="$(pick_config "Select configuration to apply" "${1:-}")"
+
+  git_stage
+  info "Applying ${config}..."
+  sudo nixos-rebuild switch --flake ".#${config}"
+  ok "Switch complete"
+}
+
+# ── deploy ────────────────────────────────────────────────────────
+cmd_deploy() {
+  heading "Deploy (remote)"
+  local config target port
+
+  config="$(pick_config "Select configuration to deploy" "${1:-}")"
+  target="${2:-$(gum input --header "Target (user@host)" --placeholder "root@192.168.1.100")}"
+  port="${3:-$(gum input --header "SSH port" --value "22")}"
+
+  if [[ -z "$target" ]]; then
+    die "Target required"
+  fi
+
+  git_stage
+  info "Deploying ${config} to ${target}:${port}..."
+  NIX_SSHOPTS="-t -p ${port}" nixos-rebuild switch \
+    --flake ".#${config}" \
+    --target-host "${target}" \
+    --sudo
+  ok "Deploy complete"
+}
+
+# ── update ────────────────────────────────────────────────────
+cmd_update() {
+  heading "Update Flake Inputs"
+  local input="${1:-}"
+
+  if [[ -n "$input" ]]; then
+    info "Updating ${input}..."
+    nix flake update "$input"
+    ok "Updated ${input}"
+  else
+    local choice
+    choice="$(gum choose --header "What to update?" \
+      "all        Update all inputs" \
+      "pick       Choose specific input")"
+    choice="${choice%% *}"
+
+    if [[ "$choice" == "all" ]]; then
+      info "Updating all inputs..."
+      nix flake update
+      ok "All inputs updated"
+    else
+      local inputs
+      inputs="$(nix flake metadata --json 2>/dev/null | jq -r '.locks.nodes.root.inputs | keys[]')"
+      if [[ -z "$inputs" ]]; then
+        die "No flake inputs found"
+      fi
+      local selected
+      selected="$(echo "$inputs" | gum choose --no-limit --header "Select inputs to update")"
+      if [[ -z "$selected" ]]; then
+        info "Nothing selected"
+        return 0
+      fi
+      local inp
+      while IFS= read -r inp; do
+        info "Updating ${inp}..."
+        nix flake update "$inp"
+        ok "Updated ${inp}"
+      done <<< "$selected"
+    fi
+  fi
+}
+
+# ── iso ──────────────────────────────────────────────────────
+cmd_iso() {
+  heading "Build Installer ISO"
+
+  git_stage
+  info "Building installer ISO..."
+  nix build ".#nixosConfigurations.installer.config.system.build.isoImage"
+
+  local iso
+  iso="$(find result/iso -name '*.iso' 2>/dev/null | head -1)"
+  if [[ -z "$iso" ]]; then
+    die "ISO build succeeded but no .iso file found"
+  fi
+
+  ok "ISO built: ${iso}"
+  echo
+  info "Flash with:  dd if=${iso} of=/dev/sdX bs=4M status=progress"
+}
+
+# ── Main ──────────────────────────────────────────────────────────
+main() {
+  local cmd="${1:-}"
+  shift || true
+
+  if [[ "$cmd" == "--help" || "$cmd" == "-h" ]]; then
+    echo "Usage: nixctl [command] [args...]"
+    echo
+    echo "Commands:"
+    echo "  build [config]                Build a configuration"
+    echo "  switch [config]               Apply configuration locally"
+    echo "  deploy [config] [target] [port]  Deploy to remote host"
+    echo "  update [input]                Update flake inputs (or a specific one)"
+    echo "  iso                           Build installer ISO"
+    exit 0
+  fi
+
+  if [[ -z "$cmd" ]]; then
+    gum style --border double --padding "0 2" --bold -- "nixctl"
+    cmd="$(gum choose --header "What do you want to do?" \
+      "build      Build a configuration" \
+      "switch     Apply configuration locally" \
+      "deploy     Deploy to a remote host" \
+      "update     Update flake inputs" \
+      "iso        Build installer ISO")"
+    cmd="${cmd%% *}"
+  fi
+
+  case "$cmd" in
+    build)   cmd_build "${1:-}" ;;
+    switch)  cmd_switch "${1:-}" ;;
+    deploy)  cmd_deploy "${1:-}" "${2:-}" "${3:-}" ;;
+    update)  cmd_update "${1:-}" ;;
+    iso)     cmd_iso ;;
+    *) die "Unknown command: ${cmd}. Run 'nixctl --help' for usage." ;;
+  esac
+}
+
+main "$@"

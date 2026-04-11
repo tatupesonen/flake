@@ -1,0 +1,55 @@
+{
+  inputs,
+  lib,
+  den,
+  ...
+}: {
+  imports = [inputs.den.flakeModule];
+
+  den.ctx.user.includes = [den._.mutual-provider];
+
+  den.default.nixos = {pkgs, ...}: {
+    imports = [
+      inputs.disko.nixosModules.disko
+      inputs.nixos-facter-modules.nixosModules.facter
+      inputs.stylix.nixosModules.stylix
+    ];
+
+    nixpkgs.config.allowUnfree = true;
+
+    nix = {
+      gc = {
+        automatic = true;
+        dates = "weekly";
+        options = "--delete-older-than 7d";
+      };
+
+      settings = {
+        experimental-features = ["nix-command" "flakes"];
+        max-jobs = "auto";
+        auto-optimise-store = true;
+        accept-flake-config = true;
+        trusted-users = ["root" "@wheel"];
+        substituters = [
+          "https://cache.nixos.org/"
+          "https://nix-community.cachix.org"
+          "https://noctalia.cachix.org"
+          "https://niri.cachix.org"
+        ];
+        trusted-public-keys = [
+          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+          "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
+          "niri.cachix.org-1:Wv0OmO7PsuocRKzfDoJ3mulSl7Z6oezYhGhR+3W2964="
+        ];
+      };
+    };
+
+    home-manager.useGlobalPkgs = true;
+    system.stateVersion = lib.mkDefault "24.05";
+  };
+
+  den.default.homeManager = {
+    imports = [inputs.stylix.homeModules.stylix];
+    home.stateVersion = lib.mkDefault "24.05";
+  };
+}
