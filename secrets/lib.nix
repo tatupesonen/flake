@@ -16,6 +16,7 @@ let
   registry = {
     # ── base (every user) ──────────────────────────────
     ssh-config = { path = ".ssh/config"; mode = "0644"; tags = ["base"]; };
+    ssh-key = { path = ".ssh/id_ed25519"; tags = ["base"]; pub = "id_ed25519.pub"; };
     age-key = { path = ".config/sops/age/keys.txt"; tags = ["base"]; };
 
     # ── work ───────────────────────────────────────────

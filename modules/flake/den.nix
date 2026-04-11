@@ -14,7 +14,10 @@
       inputs.nixos-facter-modules.nixosModules.facter
       inputs.stylix.nixosModules.stylix
       inputs.sops-nix.nixosModules.sops
+      inputs.niri.nixosModules.niri
     ];
+
+    niri-flake.cache.enable = false;
 
     sops.defaultSopsFile = lib.mkIf (builtins.pathExists ../../secrets/secrets.yaml) ../../secrets/secrets.yaml;
     sops.age.sshKeyPaths = ["/etc/ssh/ssh_host_ed25519_key"];
@@ -49,11 +52,15 @@
     };
 
     home-manager.useGlobalPkgs = true;
+    home-manager.backupFileExtension = "hm-backup";
     system.stateVersion = lib.mkDefault "24.05";
   };
 
   den.default.homeManager = {
-    imports = [inputs.stylix.homeModules.stylix];
+    imports = [
+      inputs.stylix.homeModules.stylix
+      inputs.noctalia.homeModules.default
+    ];
     home.stateVersion = lib.mkDefault "24.05";
   };
 }

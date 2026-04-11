@@ -15,6 +15,12 @@
         networking.wireless.enable = lib.mkForce false;
         networking.networkmanager.enable = true;
 
+        # SSH ready out of the box
+        services.openssh.enable = true;
+        users.users.root.openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC0TRPtsjD7CV476AeJ1c2GbFIrrGc4Tq66CBjnSBmwu tatu@narigon.dev"
+        ];
+
         environment.systemPackages = (with pkgs; [
           git
           vim

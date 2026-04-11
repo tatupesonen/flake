@@ -13,7 +13,7 @@
       den.aspects.hm-programs
     ];
 
-    nixos = {
+    nixos = {pkgs, ...}: {
       networking.networkmanager.enable = true;
       networking.firewall.enable = true;
 
@@ -23,6 +23,11 @@
       # USB auto-mounting
       services.udisks2.enable = true;
       services.gvfs.enable = true;
+
+      environment.systemPackages = with pkgs; [
+        alacritty
+        nautilus
+      ];
     };
   };
 }

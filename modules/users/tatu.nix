@@ -8,6 +8,9 @@ in {
   den.aspects.tatu = {
     includes = [
       den.provides.define-user
+      den.aspects.hm-niri
+      den.aspects.hm-noctalia
+      den.aspects.hm-alacritty
       den.aspects.hm-shell
       den.aspects.neovim
     ];
@@ -23,6 +26,28 @@ in {
     } else {
       initialPassword = "changeme";
     });
+
+    homeManager = {config, ...}: {
+      programs.git = {
+        enable = true;
+        signing = {
+          key = "~/.ssh/id_ed25519.pub";
+          signByDefault = true;
+          format = "ssh";
+        };
+        settings = {
+          user.name = "Tatu Pesonen";
+          user.email = "tatu@narigon.dev";
+          init.defaultBranch = "main";
+          push.autoSetupRemote = true;
+          pull.rebase = false;
+          gpg.ssh.allowedSignersFile = "${config.home.homeDirectory}/.ssh/allowed_signers";
+        };
+      };
+
+      home.file.".ssh/allowed_signers".text =
+        "tatu@narigon.dev ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC0TRPtsjD7CV476AeJ1c2GbFIrrGc4Tq66CBjnSBmwu";
+    };
 
     nixos = {pkgs, ...}: {
       programs.zsh.enable = true;
