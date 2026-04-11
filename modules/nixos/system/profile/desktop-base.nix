@@ -10,6 +10,7 @@
       den.aspects.cli-tools
       den.aspects.browser
       den.aspects.ssh-agent
+      den.aspects.hm-programs
     ];
 
     nixos = {

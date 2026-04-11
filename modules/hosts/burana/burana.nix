@@ -1,18 +1,16 @@
 {den, ...}: {
-  den.aspects.artisan = {
+  den.aspects.burana = {
     includes = [
-      den.aspects.desktop-base
-      # den.aspects.work-profile
+      den.aspects.server-base
       den.aspects.ssd
     ];
 
     nixos = {pkgs, ...}: {
-      networking.hostName = "artisan";
+      networking.hostName = "burana";
 
       boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
 
-      services.openssh.enable = true;
       environment.systemPackages = with pkgs; [vim];
     };
   };

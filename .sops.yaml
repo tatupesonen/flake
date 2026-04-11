@@ -1,0 +1,25 @@
+keys:
+  - &user_tatu age122n2gyd7pfnl7tmw8dfckv6z3e3cfv57qtvexsxa59as660nz4eq9jdan5
+  - &host_artisan age19f2mdta9uu28m7wpld0zudxr986cm5wsc6s6vngyzlaad24lfyaqfh4dug
+  - &host_burana age18nhvuhuluxcyz7jh9dfh0hmzv3a6l9zht5l49s7ug75k5quffq0sn4srnq
+creation_rules:
+  - path_regex: secrets/host-keys/.*$
+    key_groups:
+      - age:
+          - *user_tatu
+  - path_regex: secrets/sbctl-keys/.*$
+    key_groups:
+      - age:
+          - *user_tatu
+  - path_regex: secrets/.*\.yaml$
+    key_groups:
+      - age:
+          - *user_tatu
+          - *host_artisan
+          - *host_burana
+  - path_regex: secrets/files/.*$
+    key_groups:
+      - age:
+          - *user_tatu
+          - *host_artisan
+          - *host_burana

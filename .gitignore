@@ -1,2 +1,6 @@
 result
+result-*
 *.qcow2
+# Never commit plaintext private keys
+**/ssh_host_*_key
+!**/ssh_host_*_key.pub

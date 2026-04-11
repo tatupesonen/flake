@@ -9,8 +9,12 @@
 #   ./nixctl build [config]         Build a configuration
 #   ./nixctl switch [config]        Apply configuration locally
 #   ./nixctl deploy [config] [target] [port]  Deploy to remote host
-#   ./nixctl update [input]         Update flake inputs (or a specific one)
+#   ./nixctl install                Fresh NixOS install wizard
 #   ./nixctl iso                    Build installer ISO
+#   ./nixctl update [input]         Update flake inputs (or a specific one)
+#   ./nixctl secrets edit           Edit secrets.yaml
+#   ./nixctl secrets encrypt        Encrypt local credentials
+#   ./nixctl secrets rotate         Re-encrypt with current keys
 
 set -euo pipefail
 
@@ -19,7 +23,7 @@ set -euo pipefail
 # After first run, deps are cached and startup is near-instant.
 if [[ -z "${NIXCTL_WRAPPED:-}" ]]; then
   exec env NIXCTL_WRAPPED=1 nix shell \
-    nixpkgs#{gum,jq,nixos-rebuild} \
+    nixpkgs#{gum,sops,ssh-to-age,mkpasswd,jq,nixos-rebuild,sshpass,qemu} \
     --command bash "$0" "$@"
 fi
 
@@ -52,6 +56,24 @@ git_stage() {
   git add -A
 }
 
+# ── Age key ───────────────────────────────────────────────────────
+require_age_key() {
+  export SOPS_AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+  if [[ -f "$SOPS_AGE_KEY_FILE" ]]; then
+    return 0
+  fi
+
+  warn "No age key found at ${SOPS_AGE_KEY_FILE}"
+  if ! gum confirm "Generate from ~/.ssh/sops_ed25519?"; then
+    die "Age key required"
+  fi
+
+  mkdir -p "$(dirname "$SOPS_AGE_KEY_FILE")"
+  ssh-to-age -private-key -i "$HOME/.ssh/sops_ed25519" > "$SOPS_AGE_KEY_FILE"
+  chmod 600 "$SOPS_AGE_KEY_FILE"
+  ok "Age key generated"
+}
+
 # ── Host helpers ──────────────────────────────────────────────────
 
 # List all nixosConfigurations from the flake
@@ -78,6 +100,76 @@ pick_config() {
     die "No nixosConfigurations found in flake"
   fi
   echo "$configs" | gum choose --header "$header"
+}
+
+# Map a config name to its host directory (aspect)
+config_to_aspect() {
+  local config="$1"
+  local best=""
+
+  for dir in modules/hosts/*/; do
+    local name
+    name="$(basename "$dir")"
+    if [[ "$config" == "$name" || "$config" == "${name}"-* ]]; then
+      if [[ ${#name} -gt ${#best} ]]; then
+        best="$name"
+      fi
+    fi
+  done
+
+  if [[ -z "$best" ]]; then
+    die "No host directory found for '${config}'"
+  fi
+  echo "$best"
+}
+
+# ── .sops.yaml generation ────────────────────────────────────────
+update_sops_yaml() {
+  local user_age_key
+  user_age_key="$(ssh-to-age -i "$HOME/.ssh/sops_ed25519.pub" 2>/dev/null)" \
+    || die "Cannot read sops public key from ~/.ssh/sops_ed25519.pub"
+
+  local -a key_lines=("  - &user_tatu ${user_age_key}")
+  local -a age_refs=("          - *user_tatu")
+
+  local dir host_name host_age_key
+  for dir in modules/hosts/*/keys; do
+    if [[ ! -f "${dir}/ssh_host_ed25519_key.pub" ]]; then
+      continue
+    fi
+    host_name="$(basename "$(dirname "$dir")")"
+    host_age_key="$(ssh-to-age -i "${dir}/ssh_host_ed25519_key.pub")" \
+      || die "Cannot convert host key for ${host_name}"
+    key_lines+=("  - &host_${host_name} ${host_age_key}")
+    age_refs+=("          - *host_${host_name}")
+  done
+
+  local keys_block age_block
+  keys_block="$(printf '%s\n' "${key_lines[@]}")"
+  age_block="$(printf '%s\n' "${age_refs[@]}")"
+
+  cat > .sops.yaml <<EOF
+keys:
+${keys_block}
+creation_rules:
+  - path_regex: secrets/host-keys/.*\$
+    key_groups:
+      - age:
+          - *user_tatu
+  - path_regex: secrets/sbctl-keys/.*\$
+    key_groups:
+      - age:
+          - *user_tatu
+  - path_regex: secrets/.*\.yaml\$
+    key_groups:
+      - age:
+${age_block}
+  - path_regex: secrets/files/.*\$
+    key_groups:
+      - age:
+${age_block}
+EOF
+  ok "Updated .sops.yaml"
 }
 
 # ── build ─────────────────────────────────────────────────────────
@@ -124,6 +216,325 @@ cmd_deploy() {
     --target-host "${target}" \
     --sudo
   ok "Deploy complete"
+}
+
+# ── install ───────────────────────────────────────────────────────
+cmd_install() {
+  heading "Fresh Install"
+
+  info \
+    "Prerequisites:" \
+    "  1. Target is booted into a NixOS live installer" \
+    "  2. Target is reachable via SSH" \
+    "  3. Host config exists in modules/hosts/<name>/"
+  echo
+
+  # ── Config ──────────────────────
+  local config aspect
+  config="$(pick_config "Select configuration to install")"
+  aspect="$(config_to_aspect "$config")"
+
+  # ── Connection ──────────────────
+  local target ssh_port target_host
+  target="$(gum input --header "Target (user@host)" --placeholder "root@192.168.1.100")"
+  ssh_port="$(gum input --header "SSH port" --value "22")"
+  if [[ -z "$target" ]]; then
+    die "Target required"
+  fi
+
+  target_host="${target#*@}"
+  info "Testing connection to ${target_host}:${ssh_port}..."
+  if ! timeout 5 bash -c "echo >/dev/tcp/${target_host}/${ssh_port}" 2>/dev/null; then
+    die \
+      "Cannot reach ${target_host}:${ssh_port}" \
+      "" \
+      "Ensure:" \
+      "  1. SSH is running: systemctl start sshd" \
+      "  2. Firewall allows port ${ssh_port}" \
+      "  3. IP/hostname is correct"
+  fi
+  ok "SSH reachable"
+  echo
+
+  # ── SSH auth ────────────────────
+  local -a ssh_args=()
+  local auth
+  auth="$(gum choose --header "SSH authentication" "key" "password")"
+  if [[ "$auth" == "password" ]]; then
+    SSHPASS="$(gum input --header "SSH password for target" --password)"
+    export SSHPASS
+    ssh_args+=(--env-password)
+  fi
+
+  # ── SSH command helper ──────────
+  local -a ssh_cmd=(ssh -p "$ssh_port" -o StrictHostKeyChecking=accept-new)
+  [[ "$auth" == "password" ]] && ssh_cmd=(sshpass -e "${ssh_cmd[@]}")
+
+  # ── User ────────────────────────
+  local -a available_users=()
+  local f
+  for f in modules/users/*.nix; do
+    available_users+=("$(basename "${f%.nix}")")
+  done
+
+  local user_name
+  if [[ ${#available_users[@]} -eq 1 ]]; then
+    user_name="${available_users[0]}"
+    info "User: ${user_name}"
+  else
+    user_name="$(printf '%s\n' "${available_users[@]}" \
+      | gum choose --header "Select user for this host")"
+  fi
+  echo
+
+  # ── User password ───────────────
+  heading "User Account"
+  info "Set login password for '${user_name}'"
+  local user_pass user_pass_confirm hashed_pass
+  user_pass="$(gum input --header "Password" --password)"
+  user_pass_confirm="$(gum input --header "Confirm password" --password)"
+  if [[ "$user_pass" != "$user_pass_confirm" ]]; then
+    die "Passwords don't match"
+  fi
+  hashed_pass="$(mkpasswd -m sha-512 "$user_pass")"
+
+  require_age_key
+
+  # ── Host SSH key ────────────────
+  local key_dir="modules/hosts/${aspect}/keys"
+  local sops_key="secrets/host-keys/${aspect}"
+  if [[ ! -f "${key_dir}/ssh_host_ed25519_key.pub" ]]; then
+    warn "Generating SSH host key for ${aspect}..."
+    mkdir -p "$key_dir" secrets/host-keys
+    ssh-keygen -t ed25519 -f "${key_dir}/ssh_host_ed25519_key" -N "" -C "$aspect" -q
+    ok "Host key generated"
+
+    # Generate .sops.yaml before first encryption
+    update_sops_yaml
+
+    # Encrypt private key into sops and remove plaintext
+    cp "${key_dir}/ssh_host_ed25519_key" "$sops_key"
+    sops --encrypt --input-type binary --output-type binary --in-place "$sops_key"
+    rm -f "${key_dir}/ssh_host_ed25519_key"
+    ok "Host key encrypted to ${sops_key}"
+  elif [[ ! -f "$sops_key" && -f "${key_dir}/ssh_host_ed25519_key" ]]; then
+    # Migrate: plaintext private key exists but not yet in sops
+    warn "Migrating host key for ${aspect} to sops..."
+    mkdir -p secrets/host-keys
+    update_sops_yaml
+    cp "${key_dir}/ssh_host_ed25519_key" "$sops_key"
+    sops --encrypt --input-type binary --output-type binary --in-place "$sops_key"
+    rm -f "${key_dir}/ssh_host_ed25519_key"
+    ok "Host key encrypted in sops"
+  elif [[ ! -f "$sops_key" ]]; then
+    die "No host key found for ${aspect} — check secrets/host-keys/"
+  fi
+
+  update_sops_yaml
+
+  # ── Encrypt password ────────────
+  local plaintext
+  plaintext="$(mktemp)"
+
+  if [[ -f secrets/secrets.yaml ]]; then
+    sops --decrypt secrets/secrets.yaml > "$plaintext"
+    # Remove existing entry for this user (if any)
+    grep -v "^${user_name}-password:" "$plaintext" > "${plaintext}.new" || true
+    mv "${plaintext}.new" "$plaintext"
+  fi
+
+  echo "${user_name}-password: \"${hashed_pass}\"" >> "$plaintext"
+  mkdir -p secrets
+  cp "$plaintext" secrets/secrets.yaml
+  sops --encrypt --in-place secrets/secrets.yaml
+  rm -f "$plaintext"
+  ok "Password encrypted in secrets/secrets.yaml"
+
+  # ── Extra files for target ──────
+  local extra_files
+  extra_files="$(mktemp -d)"
+
+  install -d -m 755 "${extra_files}/etc/ssh"
+  sops --decrypt --input-type binary --output-type binary "$sops_key" > "${extra_files}/etc/ssh/ssh_host_ed25519_key"
+  chmod 600 "${extra_files}/etc/ssh/ssh_host_ed25519_key"
+  install -m 644 "${key_dir}/ssh_host_ed25519_key.pub" "${extra_files}/etc/ssh/ssh_host_ed25519_key.pub"
+
+  # ── LUKS ────────────────────────
+  local -a luks_args=()
+  local luks_file=""
+  if gum confirm "Set up LUKS disk encryption?"; then
+    local luks_pass luks_pass_confirm
+    luks_pass="$(gum input --header "LUKS password" --password)"
+    luks_pass_confirm="$(gum input --header "Confirm LUKS password" --password)"
+    if [[ "$luks_pass" != "$luks_pass_confirm" ]]; then
+      rm -rf "$extra_files"
+      die "LUKS passwords don't match"
+    fi
+    luks_file="$(mktemp)"
+    echo -n "$luks_pass" > "$luks_file"
+    luks_args+=(--disk-encryption-keys /tmp/luks-password "$luks_file")
+  fi
+
+  # ── Secure Boot (Lanzaboote) ────
+  local has_secureboot=no
+  if grep -q "lanzaboote" "modules/hosts/${aspect}/"*.nix 2>/dev/null; then
+    has_secureboot=yes
+    local sbctl_sops="secrets/sbctl-keys/${aspect}"
+
+    if [[ -f "$sbctl_sops" ]]; then
+      info "Restoring secure boot keys from sops..."
+    else
+      heading "Secure Boot"
+      info "No secure boot keys found for ${aspect}, creating on target..."
+
+      "${ssh_cmd[@]}" "$target" \
+        "nix shell nixpkgs#sbctl -c sudo sbctl create-keys"
+      ok "Keys created on target"
+
+      # Pull keys back from target
+      local sbctl_tar
+      sbctl_tar="$(mktemp)"
+      "${ssh_cmd[@]}" "$target" \
+        "sudo tar -cf - -C / var/lib/sbctl" > "$sbctl_tar"
+
+      # Encrypt and store in sops
+      mkdir -p secrets/sbctl-keys
+      cp "$sbctl_tar" "$sbctl_sops"
+      sops --encrypt --in-place "$sbctl_sops"
+      rm -f "$sbctl_tar"
+      ok "Secure boot keys encrypted in ${sbctl_sops}"
+
+      # Enroll keys on target
+      if gum confirm "Enroll secure boot keys in UEFI? (Requires setup mode)"; then
+        "${ssh_cmd[@]}" "$target" \
+          "nix shell nixpkgs#sbctl -c sudo sbctl enroll-keys --microsoft"
+        ok "Keys enrolled in UEFI firmware"
+      else
+        warn "Skipping enrollment — enroll manually after first boot"
+      fi
+    fi
+
+    # Decrypt into extra-files
+    install -d -m 755 "${extra_files}/var/lib"
+    sops --decrypt "$sbctl_sops" | tar -xf - -C "${extra_files}"
+    ok "Secure boot keys staged for install"
+  fi
+
+  # ── Hardware detection ──────────
+  local facter_file="modules/hosts/${aspect}/facter.json"
+
+  git_stage
+
+  # ── Confirm ─────────────────────
+  echo
+  gum style --border rounded --padding "0 1" -- \
+    "Configuration: ${config}" \
+    "Host aspect:   ${aspect}" \
+    "Target:        ${target}" \
+    "SSH port:      ${ssh_port}" \
+    "Auth:          ${auth}" \
+    "LUKS:          $([[ ${#luks_args[@]} -gt 0 ]] && echo yes || echo no)" \
+    "Secure Boot:   ${has_secureboot}" \
+    "User:          ${user_name}" \
+    "Hardware:      auto-detect (nixos-facter)"
+  echo
+  gum style --foreground 1 --bold -- "This will ERASE ALL DATA on the target disk."
+
+  if ! gum confirm "Proceed with installation?"; then
+    rm -rf "$extra_files"
+    [[ -n "$luks_file" ]] && rm -f "$luks_file"
+    info "Aborted."
+    exit 0
+  fi
+
+  nix run github:nix-community/nixos-anywhere -- \
+    "${ssh_args[@]}" \
+    --generate-hardware-config nixos-facter "$facter_file" \
+    "${luks_args[@]}" \
+    --build-on local \
+    --extra-files "$extra_files" \
+    --flake ".#${config}" \
+    --target-host "$target" \
+    -p "$ssh_port"
+
+  # Cleanup
+  rm -rf "$extra_files"
+  [[ -n "$luks_file" ]] && rm -f "$luks_file"
+
+  ok "Installation complete"
+}
+
+# ── secrets edit ──────────────────────────────────────────────────
+cmd_secrets_edit() {
+  heading "Edit Secrets"
+  require_age_key
+
+  if [[ ! -f secrets/secrets.yaml ]]; then
+    die "secrets/secrets.yaml not found — run install first"
+  fi
+
+  sops secrets/secrets.yaml
+}
+
+# ── secrets encrypt ───────────────────────────────────────────────
+cmd_secrets_encrypt() {
+  heading "Encrypt Credentials"
+  require_age_key
+  mkdir -p secrets/files
+
+  # Read the registry from secrets/lib.nix — single source of truth.
+  local registry
+  registry="$(nix eval --file secrets/lib.nix registry --json)"
+
+  local encrypted=0 skipped=0
+  local name path src
+
+  while IFS=$'\t' read -r name path; do
+    src="${HOME}/${path}"
+    if [[ ! -f "$src" ]]; then
+      warn "  skip: ${name} — ${src} not found"
+      ((skipped++)) || true
+      continue
+    fi
+    cp "$src" "secrets/files/${name}"
+    sops --encrypt --in-place "secrets/files/${name}"
+    ok "  encrypted: ${name} ← ${src}"
+    ((encrypted++)) || true
+  done < <(echo "$registry" | jq -r 'to_entries[] | "\(.key)\t\(.value.path)"')
+
+  echo
+  ok "Done: ${encrypted} encrypted, ${skipped} skipped"
+  if [[ $encrypted -gt 0 ]]; then
+    warn "Commit and deploy for changes to take effect"
+  fi
+}
+
+# ── secrets rotate ────────────────────────────────────────────────
+cmd_secrets_rotate() {
+  heading "Rotate Keys"
+  require_age_key
+
+  if [[ ! -f secrets/secrets.yaml ]]; then
+    die "secrets/secrets.yaml not found"
+  fi
+
+  update_sops_yaml
+
+  info "Re-encrypting all secrets with current keys..."
+  sops updatekeys -y secrets/secrets.yaml
+  ok "  updated: secrets.yaml"
+
+  local f
+  for f in secrets/files/*; do
+    if [[ ! -f "$f" ]]; then
+      continue
+    fi
+    sops updatekeys -y "$f"
+    ok "  updated: $(basename "$f")"
+  done
+
+  git add .sops.yaml secrets/
+  ok "All secrets re-encrypted"
 }
 
 # ── update ────────────────────────────────────────────────────
@@ -187,6 +598,58 @@ cmd_iso() {
   info "Flash with:  dd if=${iso} of=/dev/sdX bs=4M status=progress"
 }
 
+# ── vm ───────────────────────────────────────────────────────
+cmd_vm() {
+  heading "Start VM"
+
+  local disk="${1:-vm.qcow2}"
+  local size="${2:-20G}"
+
+  # Ensure ISO exists
+  local iso
+  iso="$(find result/iso -name '*.iso' 2>/dev/null | head -1)"
+  if [[ -z "$iso" ]]; then
+    info "No ISO found, building..."
+    cmd_iso
+    iso="$(find result/iso -name '*.iso' 2>/dev/null | head -1)"
+  fi
+
+  # Ensure OVMF firmware
+  local ovmf_code="/tmp/nixctl-ovmf-code.fd"
+  local ovmf_vars="/tmp/nixctl-ovmf-vars.fd"
+  if [[ ! -f "$ovmf_code" ]]; then
+    info "Fetching UEFI firmware..."
+    local ovmf_dir
+    ovmf_dir="$(nix build nixpkgs#OVMF.fd --print-out-paths --no-link 2>/dev/null)"
+    cp "${ovmf_dir}/FV/OVMF_CODE.fd" "$ovmf_code"
+    cp "${ovmf_dir}/FV/OVMF_VARS.fd" "$ovmf_vars"
+  fi
+  # OVMF_VARS must be writable (VM writes UEFI variables to it)
+  chmod +w "$ovmf_vars" 2>/dev/null || true
+
+  # Create disk if it doesn't exist
+  if [[ ! -f "$disk" ]]; then
+    info "Creating ${size} disk image: ${disk}"
+    qemu-img create -f qcow2 "$disk" "$size"
+  fi
+
+  ok "Starting VM (SSH on localhost:2222)"
+  info "  Disk: ${disk}"
+  info "  ISO:  ${iso}"
+  echo
+
+  qemu-system-x86_64 \
+    -enable-kvm -m 4096 -smp 2 \
+    -drive if=pflash,format=raw,readonly=on,file="$ovmf_code" \
+    -drive if=pflash,format=raw,file="$ovmf_vars" \
+    -drive file="$disk",format=qcow2,if=virtio \
+    -cdrom "$iso" \
+    -boot d \
+    -nic user,hostfwd=tcp::2222-:22 \
+    -vga virtio \
+    -display gtk,gl=off
+}
+
 # ── Main ──────────────────────────────────────────────────────────
 main() {
   local cmd="${1:-}"
@@ -199,8 +662,13 @@ main() {
     echo "  build [config]                Build a configuration"
     echo "  switch [config]               Apply configuration locally"
     echo "  deploy [config] [target] [port]  Deploy to remote host"
+    echo "  install                       Fresh NixOS install wizard"
     echo "  update [input]                Update flake inputs (or a specific one)"
     echo "  iso                           Build installer ISO"
+    echo "  vm [disk] [size]              Start a test VM from installer ISO"
+    echo "  secrets edit                  Edit secrets.yaml"
+    echo "  secrets encrypt               Encrypt local credentials"
+    echo "  secrets rotate                Re-encrypt with current keys"
     exit 0
   fi
 
@@ -211,7 +679,10 @@ main() {
       "switch     Apply configuration locally" \
       "deploy     Deploy to a remote host" \
       "update     Update flake inputs" \
-      "iso        Build installer ISO")"
+      "install    Fresh NixOS install" \
+      "iso        Build installer ISO" \
+      "vm         Start a test VM" \
+      "secrets    Manage secrets")"
     cmd="${cmd%% *}"
   fi
 
@@ -220,7 +691,25 @@ main() {
     switch)  cmd_switch "${1:-}" ;;
     deploy)  cmd_deploy "${1:-}" "${2:-}" "${3:-}" ;;
     update)  cmd_update "${1:-}" ;;
+    install) cmd_install ;;
     iso)     cmd_iso ;;
+    vm)      cmd_vm "${1:-}" "${2:-}" ;;
+    secrets)
+      local sub="${1:-}"
+      if [[ -z "$sub" ]]; then
+        sub="$(gum choose --header "Secret management" \
+          "edit       Edit secrets.yaml" \
+          "encrypt    Encrypt local credentials" \
+          "rotate     Re-encrypt with current keys")"
+        sub="${sub%% *}"
+      fi
+      case "$sub" in
+        edit)    cmd_secrets_edit ;;
+        encrypt) cmd_secrets_encrypt ;;
+        rotate)  cmd_secrets_rotate ;;
+        *)       die "Unknown secrets command: ${sub}" ;;
+      esac
+      ;;
     *) die "Unknown command: ${cmd}. Run 'nixctl --help' for usage." ;;
   esac
 }
