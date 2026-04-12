@@ -115,11 +115,16 @@
       services.displayManager.ly = {
         enable = true;
         settings = {
-          animation = "colormix";
+          animation = "matrix";
           animation_timeout_sec = 120;
           clock = "%H:%M";
           hide_borders = true;
           input_len = 24;
+          # Tokyo Night colors (0xSSRRGGBB)
+          bg = "0x001a1b26";
+          border_fg = "0x003b4261";
+          cmatrix_fg = "0x00bb9af7";
+          cmatrix_head_col = "0x017aa2f7";
         };
       };
 
