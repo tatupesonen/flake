@@ -47,6 +47,10 @@
       };
     };
 
+    # ── Boot splash ─────────────────────────────────────
+    boot.plymouth.enable = true;
+    boot.initrd.systemd.enable = true;
+
     # ── Security hardening ──────────────────────────────
     boot.loader.systemd-boot.editor = false;
 
