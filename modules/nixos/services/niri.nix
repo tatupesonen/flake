@@ -112,7 +112,16 @@
       };
 
       # ly display manager
-      services.displayManager.ly.enable = true;
+      services.displayManager.ly = {
+        enable = true;
+        settings = {
+          animation = "colormix";
+          animation_timeout_sec = 120;
+          clock = "%H:%M";
+          hide_borders = true;
+          input_len = 24;
+        };
+      };
 
       environment.sessionVariables.NIXOS_OZONE_WL = "1";
     };
