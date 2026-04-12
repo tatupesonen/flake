@@ -24,6 +24,7 @@
           gaps = 8;
           default-column-width.proportion = 0.5;
           focus-ring.width = 2;
+          focus-ring.active.color = "#7a2af7";
         };
 
         prefer-no-csd = true;
