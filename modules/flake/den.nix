@@ -8,7 +8,7 @@
 
   den.ctx.user.includes = [den._.mutual-provider];
 
-  den.default.nixos = {...}: {
+  den.default.nixos = {pkgs, ...}: {
     imports = [
       inputs.disko.nixosModules.disko
       inputs.nixos-facter-modules.nixosModules.facter
@@ -48,7 +48,11 @@
     };
 
     # ── Boot splash ─────────────────────────────────────
-    boot.plymouth.enable = true;
+    boot.plymouth = {
+      enable = true;
+      theme = lib.mkForce "lone";
+      themePackages = [(pkgs.adi1090x-plymouth-themes.override {selected_themes = ["lone"];})];
+    };
     boot.initrd.systemd.enable = true;
 
     # ── Security hardening ──────────────────────────────
