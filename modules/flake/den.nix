@@ -53,7 +53,6 @@
       theme = lib.mkForce "lone";
       themePackages = [(pkgs.adi1090x-plymouth-themes.override {selected_themes = ["lone"];})];
     };
-    boot.initrd.systemd.enable = true;
 
     # ── Security hardening ──────────────────────────────
     boot.loader.systemd-boot.editor = false;
