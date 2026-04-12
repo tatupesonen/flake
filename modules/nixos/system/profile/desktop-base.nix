@@ -11,9 +11,6 @@
       den.aspects.browser
       den.aspects.ssh-agent
       den.aspects.hm-programs
-      den.aspects.hm-niri
-      den.aspects.hm-noctalia
-      den.aspects.hm-alacritty
     ];
 
     nixos = {pkgs, ...}: {

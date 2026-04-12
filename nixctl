@@ -289,14 +289,24 @@ cmd_install() {
 
   # ── User password ───────────────
   heading "User Account"
-  info "Set login password for '${user_name}'"
-  local user_pass user_pass_confirm hashed_pass
-  user_pass="$(gum input --header "Password" --password)"
-  user_pass_confirm="$(gum input --header "Confirm password" --password)"
-  if [[ "$user_pass" != "$user_pass_confirm" ]]; then
-    die "Passwords don't match"
+  local pass_method hashed_pass
+  pass_method="$(gum choose --header "Password for '${user_name}'" \
+    "set        Set a password" \
+    "empty      No password (key-only auth)")"
+  pass_method="${pass_method%% *}"
+
+  if [[ "$pass_method" == "empty" ]]; then
+    hashed_pass="!"
+    warn "Account will have no password — SSH key auth only"
+  else
+    local user_pass user_pass_confirm
+    user_pass="$(gum input --header "Password" --password)"
+    user_pass_confirm="$(gum input --header "Confirm password" --password)"
+    if [[ "$user_pass" != "$user_pass_confirm" ]]; then
+      die "Passwords don't match"
+    fi
+    hashed_pass="$(mkpasswd -m sha-512 "$user_pass")"
   fi
-  hashed_pass="$(mkpasswd -m sha-512 "$user_pass")"
 
   require_age_key
 
@@ -360,20 +370,19 @@ cmd_install() {
   install -m 644 "${key_dir}/ssh_host_ed25519_key.pub" "${extra_files}/etc/ssh/ssh_host_ed25519_key.pub"
 
   # ── LUKS ────────────────────────
+  heading "Disk Encryption"
+  info "LUKS disk encryption is required"
   local -a luks_args=()
-  local luks_file=""
-  if gum confirm "Set up LUKS disk encryption?"; then
-    local luks_pass luks_pass_confirm
-    luks_pass="$(gum input --header "LUKS password" --password)"
-    luks_pass_confirm="$(gum input --header "Confirm LUKS password" --password)"
-    if [[ "$luks_pass" != "$luks_pass_confirm" ]]; then
-      rm -rf "$extra_files"
-      die "LUKS passwords don't match"
-    fi
-    luks_file="$(mktemp)"
-    echo -n "$luks_pass" > "$luks_file"
-    luks_args+=(--disk-encryption-keys /tmp/luks-password "$luks_file")
+  local luks_file luks_pass luks_pass_confirm
+  luks_pass="$(gum input --header "LUKS password" --password)"
+  luks_pass_confirm="$(gum input --header "Confirm LUKS password" --password)"
+  if [[ "$luks_pass" != "$luks_pass_confirm" ]]; then
+    rm -rf "$extra_files"
+    die "LUKS passwords don't match"
   fi
+  luks_file="$(mktemp)"
+  echo -n "$luks_pass" > "$luks_file"
+  luks_args+=(--disk-encryption-keys /tmp/luks-password "$luks_file")
 
   # ── Secure Boot (Lanzaboote) ────
   local has_secureboot=no
@@ -433,7 +442,7 @@ cmd_install() {
     "Target:        ${target}" \
     "SSH port:      ${ssh_port}" \
     "Auth:          ${auth}" \
-    "LUKS:          $([[ ${#luks_args[@]} -gt 0 ]] && echo yes || echo no)" \
+    "LUKS:          yes" \
     "Secure Boot:   ${has_secureboot}" \
     "User:          ${user_name}" \
     "Hardware:      auto-detect (nixos-facter)"

@@ -12,6 +12,7 @@ in {
   den.aspects.tatu = {
     includes = [
       den.provides.define-user
+      den.aspects.hm-alacritty
       den.aspects.hm-shell
       den.aspects.neovim
     ];

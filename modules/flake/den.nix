@@ -55,7 +55,6 @@
   den.default.homeManager = {
     imports = [
       inputs.stylix.homeModules.stylix
-      inputs.noctalia.homeModules.default
     ];
     home.stateVersion = lib.mkDefault "24.05";
   };

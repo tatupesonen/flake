@@ -1,9 +1,9 @@
 _: {
-  den.aspects.hm-alacritty.homeManager = {
+  den.aspects.hm-alacritty.homeManager = _: {
     programs.alacritty = {
       enable = true;
       settings.window.padding = {
-        x = 5;
+        x = 10;
         y = 0;
       };
     };

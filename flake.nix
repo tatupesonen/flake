@@ -17,6 +17,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # wrapper-modules for niri/noctalia config wrapping
+    wrapper-modules.url = "github:BirdeeHub/nix-wrapper-modules";
+
     # desktop
     niri = {
       url = "github:sodiboo/niri-flake";
