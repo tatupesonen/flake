@@ -17,7 +17,12 @@
       programs.nix-ld.enable = true;
 
       networking.networkmanager.enable = true;
-      networking.firewall.enable = true;
+      networking.firewall = {
+        enable = true;
+        allowedTCPPorts = [];
+        allowedUDPPorts = [];
+        allowPing = false;
+      };
 
       # GNOME Keyring for browser passwords, Signal, etc.
       services.gnome.gnome-keyring.enable = true;

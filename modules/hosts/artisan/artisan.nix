@@ -3,6 +3,8 @@
     includes = [
       den.aspects.desktop-base
       # den.aspects.work-profile
+      den.aspects.dev-tools
+      den.aspects.cybersec
       den.aspects.docker
       den.aspects.ssd
     ];

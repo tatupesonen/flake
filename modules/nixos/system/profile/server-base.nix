@@ -10,19 +10,21 @@
       hardware.graphics.enable = false;
 
       networking.networkmanager.enable = true;
-      networking.firewall.enable = true;
+      networking.firewall = {
+        enable = true;
+        allowedTCPPorts = [22];
+        allowPing = false;
+      };
 
       services.openssh = {
         enable = true;
         settings = {
-          PermitRootLogin = "prohibit-password";
+          PermitRootLogin = "no";
           PasswordAuthentication = false;
         };
       };
 
-      users.users.root.openssh.authorizedKeys.keys = [
-        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC0TRPtsjD7CV476AeJ1c2GbFIrrGc4Tq66CBjnSBmwu tatu@narigon.dev"
-      ];
+      # Root login disabled — deploy via tatu user with sudo
     };
   };
 }

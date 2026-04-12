@@ -47,6 +47,35 @@
       };
     };
 
+    # ── Security hardening ──────────────────────────────
+    boot.loader.systemd-boot.editor = false;
+
+    boot.kernel.sysctl = {
+      "kernel.kptr_restrict" = 2;
+      "kernel.dmesg_restrict" = 1;
+      "kernel.unprivileged_bpf_disabled" = 1;
+      "kernel.yama.ptrace_scope" = 2;
+      "net.ipv4.conf.all.rp_filter" = 1;
+      "net.ipv4.conf.all.send_redirects" = 0;
+      "net.ipv4.conf.all.accept_source_route" = 0;
+      "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+      "net.ipv4.tcp_syncookies" = 1;
+      "net.ipv6.conf.all.accept_source_route" = 0;
+    };
+
+    boot.tmp = {
+      useTmpfs = true;
+      tmpfsSize = "50%";
+    };
+
+    security.audit = {
+      enable = true;
+      rules = [
+        "-a exit,always -F arch=b64 -S execve"
+      ];
+    };
+    security.auditd.enable = true;
+
     home-manager.useGlobalPkgs = true;
     home-manager.backupFileExtension = "hm-backup";
     system.stateVersion = lib.mkDefault "24.05";
